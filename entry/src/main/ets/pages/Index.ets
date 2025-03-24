@@ -1,9 +1,9 @@
 import { TopSearch } from './components/TopSearch';
-import { Friends } from './Friends';
-import { Home } from './Home';
+import { Friends } from './friends/Friends';
+import { Home } from './post/Post';
 import { LogInPage } from './LogInPage';
 import { Messages } from './Messages';
-import { Mine } from './Mine';
+import { Mine } from './mine/Mine';
 import { News } from './News';
 import { BotItem, TopItem } from './utils/Mock';
 

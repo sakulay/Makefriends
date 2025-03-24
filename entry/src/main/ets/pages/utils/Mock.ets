@@ -112,3 +112,50 @@ export const videos: string[] = ['https://prod-streaming-video-msn-com.akamaized
 // export const images: Resource[] = [$r('app.media.uri1'), $r('app.media.uri2'), $r('app.media.uri3'), $r('app.media.uri4'), $r('app.media.uri5')];
 
 // export const imgs: Resource[] = [$r('app.media.image1'), $r('app.media.img'), $r('app.media.img_1'), $r('app.media.img_2'), $r('app.media.img_3'), $r('app.media.img_4'), $r('app.media.img_5'), $r('app.media.img_6'), $r('app.media.img_7')];
+
+export class friends{
+  img: string;
+  nickname: string;
+  bio: string;
+
+  constructor(img: string, nickname: string, bio: string) {
+    this.img = img;
+    this.nickname = nickname;
+    this.bio = bio;
+  }
+}
+
+export const friendsList: friends[] = [
+  new friends('http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', 'Sugar', '一个爱生活，爱分享的人'),
+  new friends('http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', 'anson', '直爽的孤勇者'),
+  new friends('http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', 'Mike', '大力推进成熟先进技术的工程化实践'),
+  new friends('http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', 'Sugar', '一个爱生活，爱分享的人'),
+  new friends('http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', 'anson', '直爽的孤勇者'),
+  new friends('http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', 'Mike', '大力推进成熟先进技术的工程化实践'),
+  new friends('http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', 'Sugar', '一个爱生活，爱分享的人'),
+  new friends('http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', 'anson', '直爽的孤勇者'),
+  new friends('http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', 'Mike', '大力推进成熟先进技术的工程化实践'),
+  new friends('http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', 'Sugar', '一个爱生活，爱分享的人'),
+  new friends('http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', 'anson', '直爽的孤勇者'),
+  new friends('http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', 'Mike', '大力推进成熟先进技术的工程化实践'),
+  new friends('http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', 'Sugar', '一个爱生活，爱分享的人'),
+  new friends('http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', 'anson', '直爽的孤勇者'),
+  new friends('http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', 'Mike', '大力推进成熟先进技术的工程化实践')
+]
+
+export class PersonalInfo {
+  id: number
+  img: string;
+  nickname: string;
+  bio: string;
+  status: number;
+
+  constructor(id: number, img: string, nickname: string, bio: string, status: number) {
+    this.id = id;
+    this.img = img;
+    this.nickname = nickname;
+    this.bio = bio;
+    this.status = status;
+  }
+
+}

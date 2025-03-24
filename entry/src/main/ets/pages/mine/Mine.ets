@@ -1,3 +1,5 @@
+import { router } from "@kit.ArkUI"
+
 @Entry
 @Component
 export struct Mine {
@@ -8,13 +10,13 @@ export struct Mine {
         Image($r('app.media.ic_favorite'))
           .height(33)
           .width(33)
-        Text('离线缓存')
+        Text('我的动态')
       }
       Column() {
         Image($r('app.media.ic_favorite'))
           .height(33)
           .width(33)
-        Text('历史记录')
+        Text('我的评论')
       }
       Column() {
         Image($r('app.media.ic_favorite'))
@@ -34,8 +36,10 @@ export struct Mine {
     .padding(15)
     .justifyContent(FlexAlign.SpaceBetween)
   }
+
   build() {
     Column() {
+      // 顶部
       Row(){
         // 头像展示
         Column() {
@@ -64,7 +68,7 @@ export struct Mine {
             .width(20)
             .height(15)
         }
-        // .width(10)
+        // .width(10)00
         .height(70)
         .justifyContent(FlexAlign.Center)
       }
@@ -74,18 +78,33 @@ export struct Mine {
       .backgroundColor(Color.White)
       .alignItems(VerticalAlign.Top)
       .justifyContent(FlexAlign.SpaceBetween)
-
+      .onClick(()=>{
+        router.pushUrl({
+          url: 'pages/mine/MineDetail'
+        })
+      })
+      // 中间
       Column() {
-        Default()
+        this.Default()
       }
       .width('100%')
-      .flexGrow(1)
+      .height(80)
+      .backgroundColor(Color.White)
+      .margin({top: 15})
+      // 底部
+      Column() {
+        Button("111111")
+          .onClick(()=>{
+            router.pushUrl({url: 'pages/mine/MineDetail',params: {}})
+          })
+      }
+      .width('100%')
       .backgroundColor(Color.White)
       .margin({top: 15})
     }
     .height('100%')
     .width('100%')
-    .backgroundColor('#f1f3f5')
+    .backgroundColor('#f1f0f0')
 
   }
 }

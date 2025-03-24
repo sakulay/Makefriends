@@ -1,5 +1,10 @@
 {
   "src": [
-    "pages/Index"
+    "pages/Index",
+    "pages/mine/Mine",
+    "pages/mine/MineDetail",
+    "pages/friends/Friends",
+    "pages/friends/InfoCard",
+    "pages/friends/AddFriends"
   ]
 }

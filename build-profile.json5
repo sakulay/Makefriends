@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\10555\\.ohos\\config\\default_MakeFriends_fcuk8XiWa01QOqklqPsYS0eGP0APbQZoT8-IaOhl8eo=.cer",
+          "storePassword": "0000001997B1A8B362E6A7D6E5AA5CEB0270533780DBCD9BB20832D95C631F0952BA6EC56F8FD396F0",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001953794977DBCB895C9689EA913BD0EFC88B20A79D4F87261B4AF3B77B393EDB705C356E1060",
+          "profile": "C:\\Users\\10555\\.ohos\\config\\default_MakeFriends_fcuk8XiWa01QOqklqPsYS0eGP0APbQZoT8-IaOhl8eo=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\10555\\.ohos\\config\\default_MakeFriends_fcuk8XiWa01QOqklqPsYS0eGP0APbQZoT8-IaOhl8eo=.p12"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
