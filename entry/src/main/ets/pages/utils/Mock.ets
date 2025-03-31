@@ -159,3 +159,94 @@ export class PersonalInfo {
   }
 
 }
+
+export class Post{
+  id: number
+  userId: number
+  nickname: string
+  avatar: string
+  title: string
+  content: string
+  imgList: string[]
+  likeCount: number
+  commentCount: number
+  createTime: string
+
+  constructor(id: number, userId: number, nickname: string, avatar: string, title: string, content: string, imgList: string[], likeCount: number, commentCount: number, createTime: string) {
+    this.id = id;
+    this.userId = userId;
+    this.nickname = nickname;
+    this.avatar = avatar;
+    this.title = title;
+    this.content = content;
+    this.imgList = imgList;
+    this.likeCount = likeCount;
+    this.commentCount = commentCount;
+    this.createTime = createTime;
+  }
+}
+export function mockInfo() {
+  return new PersonalInfo(2101510218, 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', '林键超', '我自横刀向天笑，去留肝胆两昆仑', 1)
+}
+export const PostList: Post[] = [
+  new Post(1, 14, 'sugar', 'http://111.230.102.82:40061/i/0/2025/02/25/sdw5hd-0.jpg', '价格近 DeepSeek 的三百倍价格近 DeepSeek 的三百倍', '北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5，北京时间2月28日凌晨4点，OpenAI正式发布传闻中的“最后一款非推理模型”GPT-4.5', ['http://111.230.102.82:40061/i/2025/03/03/plr7t4-0.png', 'http://111.230.102.82:40061/i/2025/03/03/plrmwr-0.png', 'http://111.230.102.82:40061/i/2025/03/24/yspn1w.jpeg'], 10, 20, '2025-02-25 12:00:00'),
+  new Post(2, 14, 'anson', 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg','DeepSeek开源周第四弹！一次性发布3个开源项目，梁文锋亲自参与开发', '1）DualPipe：这是一种创新的双向流水线并行（Pipeline Parallelism）算法，首次在 DeepSeek-V3 技术报告中提出。该算法能够实现前向/后向计算与通信阶段的完全重叠，可显著减少流水线空泡（Pipeline Bubbles）。\n' +
+    '\n' +
+    '（项目地址：https://github.com/deepseek-ai/DualPipe）\n' +
+    '\n' +
+    '（2）EPLB：这是 DeepSeek-V3 训练框架中实际使用的专家并行负载均衡算法（EPLB）。该算法基于对专家负载的估算，计算出一个平衡的专家复制和分配方案。同时 DeepSeek 提醒道，该开源代码库不包含专家负载预测的确切方法，常规方法是使用历史统计数据的移动平均值来预测。\n' +
+    '\n' +
+    '（项目地址：https://github.com/deepseek-ai/EPLB）\n' +
+    '\n' +
+    '（3）DeepSeek Infra 中的性能分析数据：为了帮助开发者更深入地了解通信-计算重叠策略以及底层技术细节，DeepSeek 选择开源其训练和推理框架中收集的性能分析数据。据官方介绍，这些数据是通过 PyTorch Profiler 采集的，开发者下载后可直接在 Chrome 浏览器（chrome://tracing） 或 Edge 浏览器（edge://tracing） 中进行可视化分析。\n' +
+    '\n' +
+    '（项目地址：https://github.com/deepseek-ai/profile-data）\n' +
+    '\n' +
+    '尤其值得一提的是，在 DualPipe 的 README 文件中，特别提到梁文峰本人也参与了该项目的创建与开发。\n', ['http://111.230.102.82:40061/i/2025/03/03/plr7t4-0.png', 'http://111.230.102.82:40061/i/2025/03/03/plrmwr-0.png'], 30, 40, '2025-02-25 12:00:00'),
+  new Post(3, 14, 'mike', 'http://111.230.102.82:40061/i/2025/02/25/10h2q0v-0.jpeg', '标题3', '内容3', ['http://111.230.102.82:40061/i/2025/03/03/plr7t4-0.png'], 50, 60, '2025-02-25 12:00:00'),
+]
+
+export class comments {
+  id: number;
+  userId: number;
+  postId: number;
+  content: string;
+  parentId: number;
+  createTime: string;
+  isReply: number;
+  children: comments[]; // 添加 children 属性
+
+  constructor(id: number, userId: number, postId: number, content: string, parentId: number, createTime: string, isReply: number) {
+    this.id = id;
+    this.userId = userId;
+    this.postId = postId;
+    this.content = content;
+    this.parentId = parentId;
+    this.createTime = createTime;
+    this.isReply = isReply;
+    this.children = []; // 初始化为空数组
+  }
+}
+
+export const commentList: comments[] = [
+  new comments(1, 14, 1, '一级评论1', 0, '2025-02-25 12:00:00', 0),
+  new comments(2, 14, 1, '一级评论2', 0, '2025-02-25 12:00:00', 0),
+  new comments(3, 14, 1, '二级评论3', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '二级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '三级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(1, 14, 1, '一级评论1', 0, '2025-02-25 12:00:00', 0),
+  new comments(2, 14, 1, '一级评论2', 0, '2025-02-25 12:00:00', 0),
+  new comments(3, 14, 1, '二级评论3', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '二级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '三级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(1, 14, 1, '一级评论1', 0, '2025-02-25 12:00:00', 0),
+  new comments(2, 14, 1, '一级评论2', 0, '2025-02-25 12:00:00', 0),
+  new comments(3, 14, 1, '二级评论3', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '二级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '三级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(1, 14, 1, '一级评论1', 0, '2025-02-25 12:00:00', 0),
+  new comments(2, 14, 1, '一级评论2', 0, '2025-02-25 12:00:00', 0),
+  new comments(3, 14, 1, '二级评论3', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '二级评论4', 1, '2025-02-25 12:00:00', 1),
+  new comments(3, 14, 1, '三级评论4', 1, '2025-02-25 12:00:00', 1),
+]

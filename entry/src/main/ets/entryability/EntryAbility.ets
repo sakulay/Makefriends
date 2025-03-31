@@ -1,7 +1,7 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-import { photoAccessHelper } from '@kit.MediaLibraryKit';
+
 
 export default class EntryAbility extends UIAbility {
 

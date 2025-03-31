@@ -5,6 +5,10 @@
     "pages/mine/MineDetail",
     "pages/friends/Friends",
     "pages/friends/InfoCard",
-    "pages/friends/AddFriends"
+    "pages/friends/AddFriends",
+    "pages/post/Post",
+    "pages/post/RecPost",
+    "pages/post/PostPage",
+    "pages/chat/ChatPage"
   ]
 }

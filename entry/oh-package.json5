@@ -5,6 +5,8 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "@ohos/stompjs": "1.0.0"
+  }
 }
 

@@ -1,5 +1,6 @@
 import { PromptAction, router } from "@kit.ArkUI"
-import { PersonalInfo } from "../utils/Mock"
+import { PostCard } from "../components/PostCard"
+import { PersonalInfo, Post, PostList } from "../utils/Mock"
 
 @Entry
 @Component
@@ -7,6 +8,7 @@ export struct InfoCard {
   @State status: number = 1
   @State text: string = '发消息'
   @State info: PersonalInfo = new PersonalInfo(2101510218, 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', '林键超', '我自横刀向天笑，去留肝胆两昆仑', 1)
+  @State postList: Post[] = PostList
   private uiContext: UIContext = this.getUIContext()
   private promptAction: PromptAction = this.uiContext.getPromptAction()
 
@@ -67,28 +69,33 @@ export struct InfoCard {
         Text(this.info.nickname)
           .fontSize(25)
         // 学号
-        Text(this.info.id.toString())
+        Text("学号：" + this.info.id.toString())
+          .fontColor(Color.Gray)
       }
       .width(220)
-      .height(70)
+      .height(60)
       .justifyContent(FlexAlign.SpaceBetween)
       .alignItems(HorizontalAlign.Start)
+      .margin({left: 15})
     }
     .width('100%')
-    .height(120)
+    .height(140)
     .padding({top: 45, left: 15, right: 15})
     .backgroundColor(Color.White)
     .alignItems(VerticalAlign.Top)
-    .justifyContent(FlexAlign.SpaceBetween)
+    .justifyContent(FlexAlign.Start)
     // 个性签名
     Row() {
       Text(this.info.bio)
+        .margin({left: 7})
         .backgroundColor(Color.White)
     }
     .width('100%')
     .justifyContent(FlexAlign.Start)
-    .backgroundColor(Color.Brown)
-    .padding(15)
+    .backgroundColor(Color.White)
+    .margin({top: 5})
+    .border({width: {top: 1}, color: '#ffe9e9e9'})
+    .padding({top: 15, left: 15, right: 15, bottom: 10})
   }
 
   @Builder
@@ -125,6 +132,13 @@ export struct InfoCard {
     .padding(10)
   }
 
+  @Builder
+  PostList(postList: Post[]) {
+    ForEach(postList, (item: Post, index: number)=>{
+      PostCard({item: item})
+    }, (item: Post) => item.id.toString())
+  }
+
   build() {
     Stack({alignContent: Alignment.TopStart}) {
       Column() {
@@ -133,10 +147,11 @@ export struct InfoCard {
             // 个人信息
             this.Info()
             // 图文动态
-            Column()
-              .height(1050)
-              .backgroundColor(Color.White)
-              .margin({top: 15})
+            Column() {
+              this.PostList(this.postList)
+            }
+            .backgroundColor(Color.White)
+            .margin({top: 15})
           }
           .justifyContent(FlexAlign.Start)
         }
@@ -146,7 +161,7 @@ export struct InfoCard {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(Color.Gray)
+      .backgroundColor('#f1f1f1')
       .justifyContent(FlexAlign.SpaceBetween)
 
       // 顶部返回按钮

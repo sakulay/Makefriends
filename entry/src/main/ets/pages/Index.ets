@@ -2,10 +2,11 @@ import { TopSearch } from './components/TopSearch';
 import { Friends } from './friends/Friends';
 import { Home } from './post/Post';
 import { LogInPage } from './LogInPage';
-import { Messages } from './Messages';
+import { Messages } from './chat/Messages';
 import { Mine } from './mine/Mine';
 import { News } from './News';
 import { BotItem, TopItem } from './utils/Mock';
+import { initMessage, MessageModel } from '../model/MessageModel';
 
 @Entry
 @Component
@@ -18,7 +19,12 @@ struct Index {
   @State showLogIn: boolean = false
   @State logInHeight: string = '0'
   @State login: boolean = true
-
+  @LocalStorageLink("unread") unreadListLink: Array<MessageModel> = []
+  aboutToAppear(): void {
+    initMessage()
+    // this.unreadListLink = AppStorage.get("unread") as Array<MessageModel>
+    console.log("index: ", AppStorage.get("unread"))
+  }
   @Builder
   TabBotBuilder(item: BotItem, index: number) {
     Column() {
@@ -31,7 +37,7 @@ struct Index {
         .fontColor(this.botSelect === index ? '#f04142' : '#000')
         .margin({ top: 4 })
     }
-    .border({ width: { top: 1 }, color: '#999' })
+    .border({ width: { top: 1 }, color: '#ffe9e9e9' })
     .backgroundColor(Color.White)
     .onClick(() => {
       if (index !== 4) {
@@ -54,7 +60,6 @@ struct Index {
     .width('100%')
     .height('100%')
   }
-
   @Builder
   TabTopBuilder(item: TopItem, index: number) {
     Column() {
