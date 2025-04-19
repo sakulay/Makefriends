@@ -1,4 +1,5 @@
-import { TopItem } from "../utils/Mock"
+import { TopItem } from "../../utils/Mock"
+import { MinePost } from "./MinePost"
 import { RecPost } from "./RecPost"
 
 @Entry
@@ -11,18 +12,14 @@ export struct Home {
     Column() {
       Text(item.title)
         .fontSize(this.topSelect === index ? 20 : 16)
-        .fontColor(this.topSelect === index ? '#f04142' : '#000')
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.topSelect === index ? $r('app.color.blue_theme_2') : '#000')
       Divider()
         .strokeWidth(2)
-        .color('#f04142')
+        .color($r('app.color.blue_theme_2'))
         .width(20)
         .opacity(this.topSelect === index ? 1 : 0)
         .margin({ top: 3 })
-      // Divider()
-      //   .strokeWidth(1)
-      //   .color(Color.Grey)
-      //   .width('100%')
-      //   .opacity(0.3)
     }
     .width(50)
     .backgroundColor(Color.White)
@@ -45,7 +42,7 @@ export struct Home {
       Stack({alignContent: Alignment.TopStart}) {
         Tabs({ barPosition: BarPosition.Start, controller: this.topController, index: this.topSelect }) {
           TabContent() {
-            Text("Tab1")
+            MinePost()
           }
           TabContent() {
             RecPost()

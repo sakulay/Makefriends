@@ -1,4 +1,4 @@
-import { Post, PostList, TopItem } from '../utils/Mock';
+import { Post, PostList, TopItem } from '../../utils/Mock';
 import { PostComment } from './PostComment';
 import { PostDetail } from './PostDetail';
 import { promptAction, router } from '@kit.ArkUI';
@@ -9,11 +9,40 @@ import { CommonConstants } from '../../common/CommonConstants';
 import { mockData } from '../../mock/NewsDetailData';
 import { util } from '@kit.ArkTS';
 import { MyScroller } from '../View/Scroller';
+import { PostModel } from '../../api/postApi';
+import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
+import { showTopToast } from '../../utils/toast';
+import { AddComment, CommentForm,
+  CommentModel,
+  CommentQuery, getCommentPageById, saveAppPostComment } from '../../api/commentApi';
+import { Page } from '../../api/friendsApi';
+import { it } from '@ohos/hypium';
+import { getStudentId } from '../../utils/utils';
+import { CommentEmptyPage } from '../components/CommentEmptyPage';
+import { Loading } from '../components/Loading';
+
 @Entry
 @Component
 struct PostPage {
   // @State post: Post = new Post(1,1,'','','','',[],1,0,'')
-  @State post: Post = PostList[0]
+  @State loading: boolean = true
+  private LOG = '[PostPage]'
+  private index = 1000
+  @State post: PostModel = new PostModel(
+    3,
+    14,
+    '标题3',
+    '内容3',
+    [],
+    50, 60, '2025-02-25 12:00:00',
+    new UserSimpleInfo(
+      '14',
+      '林键超',
+      'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg',
+      '我自横刀向天笑，去留肝胆两昆仑',
+      '',
+      1
+    ))
   @State topSelect: number = 0
   @State likeStatus: boolean = false
   @State starStatus: boolean = false
@@ -38,12 +67,36 @@ struct PostPage {
   private topController: TabsController = new TabsController()
   @State isWebAtEnd: boolean = true; // web组件是否滚动到底部，ture到Web底部，false还未到底部。
   aboutToAppear(): void {
-    let params = router.getParams() as Post
+    let params = router.getParams() as PostModel
     if(params) {
       this.post = params
     }
     // 添加模拟数据
-    this.commentList = mockData();
+    // this.commentList = mockData();
+    getCommentPageById(new CommentQuery(1, 10, this.post.id)).then((res: Page<CommentModel>) => {
+      console.log(this.LOG, `获取评论列表成功 ${JSON.stringify(res.list)}`)
+      // 将获取到的评论列表数据赋值给 commentList
+      res.list.forEach((item: CommentModel) => {
+        let comment = new NewsCommentModel(item.id, item.url, item.user, item.replyId, item.replyUser, item.text, item.commentTime, item.likeCount,
+          new NewsCommentData()
+        );
+        if(item.replyList) {
+          item.replyList.forEach((reply: CommentModel) => {
+            let replyComment = new NewsCommentModel(reply.id, reply.url, reply.user, reply.replyId, reply.replyUser, reply.text, reply.commentTime, reply.likeCount,
+              new NewsCommentData()
+            );
+            comment.replyList.pushData(replyComment)
+         })
+        }
+        this.commentList.pushData(comment)
+      })
+      // 评论加载完成
+      this.loading = false
+    }).catch((err: string) => {
+      // 评论加载完成
+      this.loading = false
+      console.log(this.LOG, `获取评论列表失败 ${JSON.stringify(err)}`)
+    })
   }
 
   // 评论输入弹窗
@@ -64,30 +117,60 @@ struct PostPage {
   });
 
   // 评论区内容
-  @Builder listBuilder() {
-    List({ scroller: this.listScroller }) {
-      LazyForEach(this.commentList, (item: NewsCommentModel) => {
-        ListItem() {
-          CommentPage({
-            commonData: item,
-            replyId: $replyId,
-            replyUser: $replyUser,
-            curUser: this.curUser,
-            dialogController: this.dialogController,
-            commentState: $commentState,
-            commentStatus: $commentStatus,
-          })
-        }
-      }, (item: NewsCommentModel) => item.id.toString())
+  @Builder listBuilder(height: string) {
+    if(this.loading) {
+      Loading({h: "60%"})
+    } else if(this.commentList.totalCount() == 0) {
+      CommentEmptyPage({H: "60%"})
+    } else {
+      List({ scroller: this.listScroller }) {
+        LazyForEach(this.commentList, (item: NewsCommentModel) => {
+          ListItem() {
+            CommentPage({
+              commonData: item,
+              replyId: $replyId,
+              replyUser: $replyUser,
+              curUser: this.curUser,
+              dialogController: this.dialogController,
+              commentState: $commentState,
+              commentStatus: $commentStatus,
+            })
+          }
+        }, (item: NewsCommentModel) => item.id.toString())
+      }
+      .alignListItem(ListItemAlign.Center)
+      .scrollBar(BarState.Off)
+      .maintainVisibleContentPosition(false) // false: 显示区域上方插入或删除数据时可见内容位置会跟随变化。
+      .enableScrollInteraction(false) // TODO：知识点：禁用List组件的手势
+      .width(CommonConstants.FULL_PERCENT)
+      // .height(CommonConstants.FULL_PERCENT)
+      .height(height)
+      .constraintSize({minHeight: "60%"})
+      .backgroundColor($r('app.color.container_nested_note_nested_list_bgc_color'))
+      .id('commentList')
     }
-    .alignListItem(ListItemAlign.Center)
-    .scrollBar(BarState.Off)
-    .maintainVisibleContentPosition(false) // false: 显示区域上方插入或删除数据时可见内容位置会跟随变化。
-    .enableScrollInteraction(false) // TODO：知识点：禁用List组件的手势
-    .width(CommonConstants.FULL_PERCENT)
-    .height(CommonConstants.FULL_PERCENT)
-    .backgroundColor($r('app.color.container_nested_note_nested_list_bgc_color'))
-    .id('commentList')
+  }
+
+  /**
+   * 评论
+   */
+  @Builder
+  Comment() {
+    Column() {
+      if(this.loading) {
+        Loading()
+      } else if(this.commentList.totalCount() == 0) {
+        CommentEmptyPage()
+      } else {
+        MyScroller({
+          listBuilder: () => {this.listBuilder("100%")},
+          titleBuilder: () => {this.CommentTitle()},
+          isWebAtEnd: $isWebAtEnd, // 传递Web组件是否滚动到下边界
+          scrollList: (offset:number)=>{ this.scrollList(offset) }, // MyScroller组件滑动List
+          getListOffset: ():number=>{ return this.getListOffset() },// MyScroller刷新List组件的yOffset
+        })
+      }
+    }
   }
 
   /**
@@ -95,19 +178,48 @@ struct PostPage {
    */
   publishComment(): void {
     // 生成评论id
-    const uuid: string = util.generateRandomUUID();
+    // const uuid: string = util.generateRandomUUID();
+    const uuid: string = this.index.toString();
+    this.index++
+    console.log(this.LOG, `uuid: ${uuid}`)
     // 添加一条评论，包含评论id、头像、昵称、回复id、回复昵称、回复文本
     const comment: NewsCommentModel =
-      new NewsCommentModel(uuid, $r('app.media.news_user_select'), this.curUser, this.replyId, this.replyUser,
+      new NewsCommentModel(uuid, this.post.userInfo.avatar, this.post.userInfo.nickname, this.replyId, this.replyUser,
         this.textInComment, new Date(), 0, new NewsCommentData());
     // 通过回复id获取该评论的父评论
+    console.log(this.LOG, this.replyId)
     const parentComment = this.commentList.getParentData(this.replyId);
     // 如果获取到了父评论，则将该评论加到父评论下
-    if (parentComment) {
-      parentComment.replyList.addDataFirst(comment);
+    if (this.replyId && parentComment) {
+      console.log(`回复${this.replyId} ${this.replyUser} ${JSON.stringify(parentComment)}`)
+      const form = new CommentForm(getStudentId(), this.replyId, this.post.id.toString(), this.textInComment, 1);
+      saveAppPostComment(form).then((res: AddComment) => {
+        console.log(this.LOG, `评论成功 ${JSON.stringify(res)}`)
+        if (res.id) {
+          comment.id = res.id;
+          comment.userInfo = res.userInfo;
+        }
+        parentComment.replyList.addDataFirst(comment);
+      }).catch((err: string) => {
+        console.log(this.LOG, `评论失败 ${JSON.stringify(err)}`)
+      })
+
     } else {
-      // 否则自己作为父评论
-      this.commentList.addDataFirst(comment);
+      // 否则自己作为父评论。回复id为文章id
+      // this.replyId = this.post.id.toString();
+      console.log(`评论${this.replyId} ${this.replyUser} ${JSON.stringify(parentComment)}`)
+      const form = new CommentForm(getStudentId(), '', this.post.id.toString(), this.textInComment, 0);
+      saveAppPostComment(form).then((res: AddComment) => {
+        console.log(this.LOG, `评论成功 ${JSON.stringify(res)}`)
+        if (res.id) {
+          comment.id = res.id;
+          comment.userInfo = res.userInfo;
+        }
+        this.commentList.addDataFirst(comment);
+      }).catch((err: string) => {
+        console.log(this.LOG, `评论失败 ${JSON.stringify(err)}`)
+      })
+
     }
     // 评论完成将回复人信息置空
     this.replyId = "";
@@ -127,10 +239,11 @@ struct PostPage {
     Column() {
       Text(item.title)
         .fontSize(this.topSelect === index ? 20 : 16)
-        .fontColor(this.topSelect === index ? '#f04142' : '#000')
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.topSelect === index ? $r('app.color.blue_theme_2') : '#000')
       Divider()
         .strokeWidth(2)
-        .color('#f04142')
+        .color($r('app.color.blue_theme_2'))
         .width(20)
         .opacity(this.topSelect === index ? 1 : 0)
         .margin({ top: 3 })
@@ -236,26 +349,9 @@ struct PostPage {
   @Builder
   Body() {
     Column() {
-      // Scroll() {
-      //   Column() {
-      //     /**
-      //      * 文章详情
-      //      */
-      //     PostDetail({post: this.post})
-      //     Text("555")
-      //     /**
-      //      * 评论区
-      //      */
-      //     // PostComment()
-      //     this.listBuilder()
-      //   }
-      //   // .height('100%')
-      //   .width('100%')
-      // }
-      // .layoutWeight(1)
       MyScroller({
         detailBuilder: () => {this.PostDetailBuilder()},
-        listBuilder: () => {this.listBuilder()},
+        listBuilder: () => {this.listBuilder("auto")},
         titleBuilder: () => {this.CommentTitle()},
         isWebAtEnd: $isWebAtEnd, // 传递Web组件是否滚动到下边界
         scrollList: (offset:number)=>{ this.scrollList(offset) }, // MyScroller组件滑动List
@@ -266,22 +362,7 @@ struct PostPage {
       this.BottomBar()
     }
   }
-  /**
-   * 评论
-   */
-  @Builder
-  Comment() {
-    Column() {
-      MyScroller({
-        // webBuilder: () => {this.PostDetailBuilder()},
-        listBuilder: () => {this.listBuilder()},
-        titleBuilder: () => {this.CommentTitle()},
-        isWebAtEnd: $isWebAtEnd, // 传递Web组件是否滚动到下边界
-        scrollList: (offset:number)=>{ this.scrollList(offset) }, // MyScroller组件滑动List
-        getListOffset: ():number=>{ return this.getListOffset() },// MyScroller刷新List组件的yOffset
-      })
-    }
-  }
+
   /**
    * 文章详情
    */
@@ -331,7 +412,10 @@ struct PostPage {
    * MyScroller获取List组件的yOffset
    */
   getListOffset():number{
-    return this.listScroller.currentOffset().yOffset;
+    if(this.listScroller.currentOffset()) {
+      return this.listScroller.currentOffset().yOffset;
+    }
+    return 0;
   }
 
   build() {

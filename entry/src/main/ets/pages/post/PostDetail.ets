@@ -1,24 +1,27 @@
-import { mockInfo, PersonalInfo, Post, PostList} from '../utils/Mock'
+import { mockInfo, PersonalInfo, Post, PostList} from '../../utils/Mock'
 import { router } from '@kit.ArkUI'
+import { PostImage, PostModel } from '../../api/postApi'
+import { UserSimpleInfo } from '../../viewmodel/UserProfileModel'
 
 @Component
 export struct PostDetail {
-  @State imgs: string[] = PostList[0].imgList
-  @State info: PersonalInfo = mockInfo()
-  @Prop post: Post
+  @State imgs: PostImage[] = []
+  @State info: UserSimpleInfo = new UserSimpleInfo('', '', '', '')
+  @Prop post: PostModel
   @State swiper_index: number = 1
   aboutToAppear(): void {
-      if(this.post) {
-        console.log(JSON.stringify(this.post))
-        this.imgs = this.post.imgList
-      }
-      // console.log(`aboutToAppear: ${this.imgs}`)
+    if(this.post) {
+      console.log("[PostDetail] 文章详细内容：",JSON.stringify(this.post))
+      this.imgs = this.post.imageList
+    }
+    this.imgs = this.post.imageList
+    this.info = this.post.userInfo
   }
   @Builder MySwiper() {
     Stack({alignContent: Alignment.BottomEnd}){
       Swiper(){
-        ForEach(this.imgs, (item: string)=>{
-          Image(item)
+        ForEach(this.imgs, (item: PostImage)=>{
+          Image(item.imageUrl)
             .objectFit(ImageFit.Contain)
             .width("100%")
             .height(350)
@@ -37,6 +40,7 @@ export struct PostDetail {
         .margin({bottom: 10, right: 10})
     }
   }
+
   build() {
     Column() {
       if(PostList[0].imgList) {
@@ -45,11 +49,11 @@ export struct PostDetail {
       Column({space: 10}) {
         // 头像、用户名
         Row({space: 8}) {
-          Image(this.post.avatar)
+          Image(this.post.userInfo.avatar)
             .width(35)
             .height(35)
             .borderRadius(25)
-          Text(this.post.nickname)
+          Text(this.post.userInfo.nickname)
             .fontSize(18)
         }
         .width('100%')

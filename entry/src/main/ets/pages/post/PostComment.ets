@@ -1,4 +1,4 @@
-import { comments, commentList } from "../utils/Mock";
+import { comments, commentList } from "../../utils/Mock";
 
 @Entry
 @Component

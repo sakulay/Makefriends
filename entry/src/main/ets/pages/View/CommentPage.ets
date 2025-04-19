@@ -68,21 +68,21 @@ export struct CommentPage {
               .height(20)
               .margin({ right: 3 })
               .opacity(0.6)
-            Text(this.commonData.likeCount.toString())
+            Text(this.commonData.likeCount? this.commonData.likeCount.toString() : "0")
               .fontColor(Color.Gray)
           }
           .width("85%")
           // .backgroundColor(Color.Green)
 
-          Text() {
-            Span((new Date().getTime() - this.commonData.commentTime.getTime()) / 1000 <= 5 ? $r('app.string.container_nested_time_place2') : $r('app.string.container_nested_time_place'))
-              .fontSize($r('app.integer.container_nested_font_size'))
-              .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
-              .opacity(0.5)
-              .fontColor(Color.Gray)
-              .padding(0)
-          }
-          .width("80%")
+          // Text() {
+          //   Span((new Date().getTime() - this.commonData.commentTime.getTime()) / 1000 <= 5 ? $r('app.string.container_nested_time_place2') : $r('app.string.container_nested_time_place'))
+          //     .fontSize($r('app.integer.container_nested_font_size'))
+          //     .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
+          //     .opacity(0.5)
+          //     .fontColor(Color.Gray)
+          //     .padding(0)
+          // }
+          // .width("80%")
           Text(this.commonData.text) // 评论的文字
             .fontSize(16)
             .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
@@ -90,39 +90,6 @@ export struct CommentPage {
             .fontColor($r('app.color.container_nested_color_blank'))
             .lineHeight(20)
             .width("80%")
-          // Row() {
-          //   // Text($r('app.string.container_nested_reply'))
-          //   //   .fontSize($r('app.integer.container_nested_font_size'))
-          //   //   .fontColor($r('app.color.container_nested_note_color'))
-          //   //   .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
-          //   //   .backgroundColor("#dbdbdb")
-          //   //   .borderRadius(5)
-          //   //   .opacity(0.8)
-          //   //   .padding({
-          //   //     left: 3,
-          //   //     right: 3,
-          //   //     top: 2,
-          //   //     bottom: 2
-          //   //   })
-          //   Blank()
-          //   Image($r("app.media.news_follow"))
-          //     .width(20)
-          //     .height(20)
-          //     .objectFit(ImageFit.Fill)
-          //     .onClick(()=>{
-          //       this.showToast();
-          //     })
-          //
-          //   Image($r("app.media.news_HeartBreak"))
-          //     .width(20)
-          //     .height(20)
-          //     .objectFit(ImageFit.Fill)
-          //     .margin({left:20})
-          //     .onClick(()=>{
-          //       this.showToast();
-          //     })
-          // }
-          // .width("85%")
         }
         .padding({
           left: $r('app.integer.container_nested_column_padding_left'),
@@ -153,7 +120,9 @@ export struct CommentPage {
               .objectFit(ImageFit.Contain)
               .width($r('app.integer.container_nested_img_width_height'))
               .height($r('app.integer.container_nested_img_width_height'))
+              .borderRadius(30)
             Column({ space: CommonConstants.SPACE_6 }) {
+              // 回复人 与 被回复人
               Row() {
                 Text(
                   (reply.user.length > 8)
@@ -176,7 +145,7 @@ export struct CommentPage {
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
                   .width("30%")
               }
-
+              // 回复内容
               Text(reply.text)
                 .fontSize($r('app.integer.container_nested_font_size'))
                 .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
@@ -184,18 +153,19 @@ export struct CommentPage {
                 .lineHeight($r("app.integer.container_nested_text_line_height"))
                 .width("85%")
                 .fontColor($r('app.color.container_nested_color_blank'))
+              // 时间、ip、回复
               Row() {
                 Text($r('app.string.container_nested_time_place1'))
                   .fontSize($r('app.integer.container_nested_font_size'))
                   .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
                   .opacity(0.5)
                   .fontColor($r('app.color.container_nested_color_blank'))
-                Text($r('app.string.container_nested_reply'))
-                  .fontSize($r('app.integer.container_nested_font_size'))
-                  .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
-                  .fontColor($r('app.color.container_nested_note_color'))
-                  .opacity(0.8)
-                  .margin({ left: $r('app.integer.container_nested_reply_margin_left') })
+                // Text($r('app.string.container_nested_reply'))
+                //   .fontSize($r('app.integer.container_nested_font_size'))
+                //   .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
+                //   .fontColor($r('app.color.container_nested_note_color'))
+                //   .opacity(0.8)
+                //   .margin({ left: $r('app.integer.container_nested_reply_margin_left') })
               }
               .width("60%")
             }

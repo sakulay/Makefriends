@@ -1,10 +1,14 @@
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { dataSharePredicates } from '@kit.ArkData';
-import { checkPermissionGrant } from '../utils/permission';
+import { checkPermissionGrant } from '../../utils/permission';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { promptAction, router } from '@kit.ArkUI';
+import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
+import { getUserSimpleInfo, updateUserProfile } from '../../api/userProfileApi';
+import { deletePic, DeleteResult, upload, Upload } from '../../api/uploadApi';
+import { showBottomToast } from '../../utils/toast';
 
 @Extend(Line) function lineStyle(value:string = "100%") {
   .width(value)
@@ -12,7 +16,9 @@ import { promptAction, router } from '@kit.ArkUI';
   .backgroundColor(Color.Grey)
 }
 
-
+interface Param {
+  studentId: string;
+}
 
 async function example() {
   console.info('getAssets');
@@ -84,29 +90,49 @@ async function savePhotoToGallery(context: common.UIAbilityContext) {
 @Entry
 @Component
 struct MineDetail{
+  private LOG = "[MineDetail]"
   @State avatarUri:string = "file://media/Photo/2/IMG_1742700953_001/IMG_001.jpg"
+  @State test: string = "file://media/Photo/4/IMG_1742880362_003/IMG_003.jpg"
+  @State studentId: string = ''
+  @State userInfo: UserSimpleInfo = new UserSimpleInfo('', '', '', '')
 
-  async example01() {
-  try {
-    let PhotoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
-    // 设置图片类型为图片
-    PhotoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
-    // 设置最多可选择的图片数量为1
-    PhotoSelectOptions.maxSelectNumber = 1;
-    let photoPicker = new photoAccessHelper.PhotoViewPicker();
-    photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult: photoAccessHelper.PhotoSelectResult) => {
-      console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
-      if (PhotoSelectResult.photoUris.length > 0) {
-        this.avatarUri = PhotoSelectResult.photoUris[0];
-      }
+  aboutToAppear(): void {
+    const params = router.getParams() as Param
+    if (params && params.studentId) {
+      this.studentId = params.studentId
+    }
+    getUserSimpleInfo(this.studentId).then((res) => {
+      console.log(this.LOG, `获取用户${this.studentId}个人信息成功`, JSON.stringify(res))
+      this.userInfo = res
+      this.avatarUri = res.avatar
     }).catch((err: BusinessError) => {
-      console.error(`PhotoViewPicker.select failed with err: ${err.code}, ${err.message}`);
-    });
-  } catch (error) {
-    let err: BusinessError = error as BusinessError;
-    console.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`);
+      console.error(`获取用户${this.studentId}个人信息成功`, err)
+    })
   }
-}
+  async example01() {
+    try {
+      let PhotoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+      // 设置图片类型为图片
+      PhotoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+      // 设置最多可选择的图片数量为1
+      PhotoSelectOptions.maxSelectNumber = 1;
+      let photoPicker = new photoAccessHelper.PhotoViewPicker();
+      photoPicker
+        .select(PhotoSelectOptions)
+        .then((PhotoSelectResult: photoAccessHelper.PhotoSelectResult) => {
+          console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
+          if (PhotoSelectResult.photoUris.length > 0) {
+            this.avatarUri = PhotoSelectResult.photoUris[0];
+          }
+        }).catch((err: BusinessError) => {
+        console.error(`PhotoViewPicker.select failed with err: ${err.code}, ${err.message}`);
+      });
+    } catch (error) {
+      let err: BusinessError = error as BusinessError;
+      console.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`);
+    }
+  }
+
   /** 头像 */
   @Builder
   avatar() {
@@ -131,11 +157,14 @@ struct MineDetail{
     Row() {
       Text(title)
         .width(50)
-      TextInput({text: text, placeholder: '点击添加'})
+      TextInput({text: this.userInfo.nickname? this.userInfo.nickname : '', placeholder: '点击添加'})
         .textAlign(TextAlign.End)
         .layoutWeight(1)
         .backgroundColor(Color.White)
         .padding(0)
+        .onChange((value: string) => {
+          this.userInfo.nickname = value;
+        })
     }
     .width('100%')
     .height(50)
@@ -160,11 +189,11 @@ struct MineDetail{
 
   /** 性别 */
   @Builder
-  gender(sex: string) {
+  gender() {
     Row() {
       Text("性别")
         .width(50)
-      Text(sex)
+      Text(this.userInfo.gender != undefined? (this.userInfo.gender == 0 ? '男' : '女') : '无')
         .layoutWeight(1)
         .textAlign(TextAlign.End)
         .onClick(()=>{
@@ -173,11 +202,11 @@ struct MineDetail{
             onAccept: (value: TextPickerResult) => {
               console.info('accept:' + value.index)
               if (value.index === 0) {
-                sex = '男'
+                this.userInfo.gender = 0
               } else {
-                sex = '女'
+                this.userInfo.gender = 1
               }
-              console.info('accept:' + sex)
+              console.info('accept:' + this.userInfo.gender)
             },
             onCancel: () => {
               console.info('cancel')
@@ -195,16 +224,19 @@ struct MineDetail{
   @Builder
   bio() {
     Row() {
-      Text("个人简介")
-        .width(65)
-      TextArea({placeholder: '点击添加'})
+      Text("个性签名：")
+        .width(67)
+      TextArea({text: this.userInfo.bio? this.userInfo.bio : '', placeholder: '点击添加'})
         .layoutWeight(1)
         .textAlign(TextAlign.End)
         .padding(0)
-        .maxLength(10)
+        .maxLength(16)
         .showCounter(true,{
           thresholdPercentage: 80,
           highlightBorder: false
+        })
+        .onChange((value: string) => {
+          this.userInfo.bio = value;
         })
         .borderRadius(0)
         .backgroundColor(Color.White)
@@ -229,6 +261,28 @@ struct MineDetail{
     })
   }
 
+  /** 保存图片至相册 */
+  @Builder
+  uploadPic1() {
+    SaveButton({text: SaveDescription.SAVE_IMAGE}).onClick(()=>{
+      upload(this.test, getContext(this) as common.UIAbilityContext).then((res: Upload)=>{
+        console.log(`上传图片成功`, JSON.stringify(res))
+        this.avatarUri = res.url
+      }).catch((err: BusinessError) => {
+        console.error(`上传图片失败`, err)
+      })
+    })
+  }
+
+  uploadPic() {
+    upload(this.avatarUri, getContext(this) as common.UIAbilityContext).then((res: Upload)=>{
+      console.log(`头像上传成功`, JSON.stringify(res))
+      this.avatarUri = res.url
+    }).catch((err: BusinessError) => {
+      console.error(`头像上传失败`, err)
+    })
+  }
+
   build() {
     Column() {
       // 顶部
@@ -237,27 +291,65 @@ struct MineDetail{
           .width(24)
           .height(20)
           .onClick(()=>{
-            router.back()
+            router.back(Number(router.getLength())-1, {reflash: 1})
           })
         Text("个人信息")
           .fontSize(25)
         Text("保存")
           .fontSize(20)
+          .onClick(async () => {
+            try{
+              // 如果头像是file://开头，则上传图片
+              if(this.avatarUri.startsWith("file:")) {
+                // 上传图片前要删除原来的图片
+                if(this.userInfo.deleteUrl) {
+                  deletePic(this.userInfo.deleteUrl).then((res: DeleteResult)=>{
+                    if(res.code == 200) {
+                      console.log(`删除成功`)
+                    } else {
+                      console.error(`删除失败`)
+                    }
+                  })
+                }
+                // 上传头像获取url
+                const u = await upload(this.avatarUri, getContext(this) as common.UIAbilityContext)
+                console.log(`上传图片成功`, JSON.stringify(u))
+                this.avatarUri = u.url
+                this.userInfo.deleteUrl = u.del
+              }
+              this.userInfo.avatar = this.avatarUri
+              console.log('准备更新：', JSON.stringify(this.userInfo))
+              updateUserProfile(this.userInfo.studentId, this.userInfo).then(() => {
+                console.log('更新个人信息成功')
+                // 更新mineSimpleInfo
+                AppStorage.set('mineSimpleInfo', this.userInfo)
+                showBottomToast(this.getUIContext(), '更新个人信息成功')
+                router.back(Number(router.getLength())-1, {reflash: 1})
+              }).catch((err: BusinessError) => {
+                console.error('更新个人信息失败: ', err)
+              })
+            } catch (err) {
+              console.error(err)
+              showBottomToast(this.getUIContext(), err)
+            }
+
+          })
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceBetween)
-      .backgroundColor(Color.Gray)
+      .backgroundColor(Color.White)
       .padding(5)
 
       // 主体
       Column() {
         Column({space: 5}) {
           this.avatar()
-          this.nickName('昵称', '林键超')
-          this.stuNum('2101510218')
-          this.gender('男')
+          this.nickName('昵称', this.userInfo.nickname)
+          this.stuNum(this.studentId)
+          this.gender()
           this.bio()
           this.savePic()
+          this.uploadPic1()
         }
         .width('100%')
         .backgroundColor(Color.White)

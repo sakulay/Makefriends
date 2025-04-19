@@ -1,16 +1,32 @@
-import { Post, PostList } from "../utils/Mock"
+import { Post, PostList } from "../../utils/Mock"
 import { router } from "@kit.ArkUI"
+import { PostImage, PostModel } from "../../api/postApi"
+import { UserSimpleInfo } from "../../viewmodel/UserProfileModel"
 
 @Component
 export struct PostCard {
-  @State item: Post = PostList[0]
+  @State item: PostModel = new PostModel(
+    3,
+    14,
+    '标题3',
+    '内容3',
+    [],
+    50, 60, '2025-02-25 12:00:00',
+    new UserSimpleInfo(
+      '14',
+      '林键超',
+      'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg',
+      '我自横刀向天笑，去留肝胆两昆仑',
+      '',
+      1
+    ))
   @State postList: Post[] = PostList
   // 生成图片列表
   @Builder
-  ImageList(imgs: string[]) {
+  ImageList(imgs: PostImage[]) {
     Row({ space: 10 }) { // 设置图片之间的间距
-      ForEach(imgs, (img: string) => {
-        Image(img)
+      ForEach(imgs, (img: PostImage) => {
+        Image(img.imageUrl)
           .width(100)
           .height(100)
           .borderRadius(10)
@@ -24,11 +40,11 @@ export struct PostCard {
     Column({space: 8}) {
       // 头像、用户名
       Row({space: 8}) {
-        Image(this.item.avatar)
+        Image(this.item.userInfo.avatar)
           .width(25)
           .height(25)
           .borderRadius(25)
-        Text(this.item.nickname)
+        Text(this.item.userInfo.nickname)
       }
       .width('100%')
       .justifyContent(FlexAlign.Start)
@@ -50,7 +66,9 @@ export struct PostCard {
       .justifyContent(FlexAlign.Start)
       //  图片
       Row() {
-        this.ImageList(this.item.imgList.slice(0, 3))
+        if(this.item.imageList) {
+          this.ImageList(this.item.imageList.slice(0, 3))
+        }
       }
       .width('100%')
       .justifyContent(FlexAlign.Start)

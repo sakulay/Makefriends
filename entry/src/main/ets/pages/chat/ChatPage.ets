@@ -1,14 +1,29 @@
 import { FaceGridConstants, SpanType } from "../../common/ChatConstants";
 import { MessageBase, SpanItem, TextDetailData } from "../../model/Message";
 import { logger } from "../../utils/Logger";
-import { display, KeyboardAvoidMode } from "@kit.ArkUI";
+import { display, KeyboardAvoidMode, router } from "@kit.ArkUI";
 import { common } from "@kit.AbilityKit";
 import window from '@ohos.window';
 import { EmojiData, LastEmojiData } from "../../model/Emoji";
 import { inputMethod } from "@kit.IMEKit";
 import { EmojiKeyboard } from "../View/EmojiKeyboard";
+import { dealImageResMsg } from "../../utils/MessageUtils";
+import { mockInfo } from "../../utils/Mock";
+import { webSocket } from "@kit.NetworkKit";
+import { BusinessError } from "@kit.BasicServicesKit";
+import { sendChatMessage } from "../../model/MessageModel";
+import { getStudentId } from "../../utils/utils";
+import { getAppChatmessages, MessageModel, readed } from "../../api/chatApi";
+import { UserSimpleInfo } from "../../viewmodel/UserProfileModel";
+import { getUserSimpleInfo } from "../../api/userProfileApi";
+import { searchFriend } from "../../api/friendsApi";
+import { showBottomError } from "../../utils/toast";
 
-const TAG = 'ChatWithExpression';
+interface Params{
+  msg: MessageBase,
+  userInfo: UserSimpleInfo
+}
+const TAG = '[ChatWithExpression]';
 const DESIGN_WIDTH: number = 640; // 设计宽度
 const STROKE_WIDTH: number = 2; // strokeWidth的宽度
 const LAYOUT_WEIGHT: number = 1; // layoutWeight参数
@@ -19,20 +34,18 @@ const MSG_TOP_BOTTOM_PADDING: number = 5; // 聊天信息上下paddding
 const MSG_LEFT_RIGHT_PADDING: number = 20; // 聊天信息左右paddding
 const MSG_HEADIMG_SIZE: number = 50; // 用户头像尺寸
 //
-const EMOJI_RESOURCE: string = 'resource:'; // 资源前缀
-const EMOJI_SUFFIX: string = '.png'; // 资源图片后缀
 const EMOJI_SRC_POS: number = 19; // 图片路径在资源中的开始位置（resource://RAWFILE/01.png截为01.png）
-const EMOJI_FILENAME_LEN: number = 2; // 图片名长度
+
 // 用户信息:昵称、头像
 const USER_NAME_MYSELF: string = '张三';
 const USER_NAME_OTHER: string = '李四';
-const HEAD_IMAGE_MYSELF: string = 'photo1.jpg';
-const HEAD_IMAGE_OTHER: string = 'photo0.jpg';
 const DELAY_TIME: number = 200; // 延时时间
 
 @Entry
 @Component
 struct ChatPage {
+  private TAG = '[ChatPage]'
+  @StorageProp('ws') ws: webSocket.WebSocket = webSocket.createWebSocket();
   // 滚动条组件
   private scroller: Scroller = new Scroller();
   // 键盘安全高度
@@ -51,12 +64,18 @@ struct ChatPage {
   private start: number = -1;
   private end: number = -1;
   private focusKey = 'msg_input'; // 输入框焦点
+  private message = ""
   // 聊天信息参数
   private screenWidth: number = 0; // 屏幕宽度
   private msgFontSize: number = 0; // 字体
   private msgMaxWidth: number = 0; // 聊天信息最大宽度
+  @State otherInfo: UserSimpleInfo = new UserSimpleInfo('2101510218', '李伟良', '', '');
+  @State mineInfo: UserSimpleInfo = new UserSimpleInfo('2101510218', '李伟良', '', '');
+  @State HEAD_IMAGE_MYSELF: string = 'photo1.jpg';
+  @State HEAD_IMAGE_OTHER: string = 'photo0.jpg';
+  @State isLoading: boolean = true;
 
-  aboutToAppear(): void {
+  async aboutToAppear(): Promise<void> {
     const displayData: display.Display = display.getDefaultDisplaySync();
     this.screenWidth = px2vp(displayData.width);
 
@@ -67,28 +86,19 @@ struct ChatPage {
     this.msgMaxWidth =
       (this.screenWidth - HEAD_IMAGE_EDGE_PADDING * 2 - HEAD_IMAGE_MSG_PADDING * 2 - MSG_HEADIMG_SIZE * 2) *
         0.95; // 2、0.95 聊天内容最大长度设为两个聊天对象之间宽度的95%
-
-    // 预加载三条聊天信息
-    const chatMsg1: string = getContext(this)
-      .resourceManager
-      .getStringSync($r("app.string.chat_with_expression_msg_1"));
-    let msgBase1 = new MessageBase(true, USER_NAME_MYSELF, HEAD_IMAGE_MYSELF, this.msgMaxWidth);
-    this.dealImageResMsg(msgBase1, chatMsg1);
-    this.textDetailData.pushData(msgBase1);
-
-    const chatMsg2: string = getContext(this)
-      .resourceManager
-      .getStringSync($r("app.string.chat_with_expression_msg_2"));
-    let msgBase2 = new MessageBase(false, USER_NAME_OTHER, HEAD_IMAGE_OTHER, this.msgMaxWidth);
-    this.dealImageResMsg(msgBase2, chatMsg2);
-    this.textDetailData.pushData(msgBase2);
-
-    const chatMsg3: string = getContext(this)
-      .resourceManager
-      .getStringSync($r("app.string.chat_with_expression_msg_3"));
-    let msgBase3 = new MessageBase(true, USER_NAME_MYSELF, HEAD_IMAGE_MYSELF, this.msgMaxWidth);
-    this.dealImageResMsg(msgBase3, chatMsg3);
-    this.textDetailData.pushData(msgBase3);
+    // 初始化双方信息
+    await this.initMineAndOtherInfo()
+    // 获取聊天信息
+    // this.getChatMessage()
+    this.initChatMessages()
+    // 全局共享聊天信息
+    AppStorage.setOrCreate('textDetailData', this.textDetailData)
+    // 全局加载对方头像
+    AppStorage.setOrCreate('imageOther', this.HEAD_IMAGE_OTHER)
+    // 全局共享聊天信息最大宽度
+    AppStorage.setOrCreate('msgMaxWidth', this.msgMaxWidth)
+    //
+    this.ws = AppStorage.get('ws') as webSocket.WebSocket;
     let context = getContext(this) as common.UIAbilityContext;
     context.windowStage.getMainWindowSync().getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE);
     window.getLastWindow(getContext(this)).then(currentWindow => {
@@ -120,60 +130,88 @@ struct ChatPage {
     })
   }
   aboutToDisappear(): void {
+    // 全局共享聊天信息
+    AppStorage.delete('textDetailData')
+    // 全局加载对方头像
+    AppStorage.delete('imageOther')
+    AppStorage.delete('msgMaxWidth')
     this.isFaceDlgOpen = false;
     this.isFaceClick = false;
   }
-  /**
-   * 将聊天信息中的文字、表情分别解析为span、imageSpan
-   * @param strMessage 聊天内容, msgBase 聊天消息结构
-   */
-  dealImageResMsg(msgBase: MessageBase, strMessage: string): void {
-    let strContent: string = ''; // 聊天内容
-    // TODO 知识点：循环解析聊天信息中的表情以及文字
-    let pos: number = strMessage.indexOf(EMOJI_RESOURCE);
-    while (pos !== -1) {
-      // 从pos后面找到.png所在位置
-      const posPng = strMessage.indexOf(EMOJI_SUFFIX, pos);
-      // 获取信息表情前面部分文字并插入span
-      strContent += strMessage.substring(0, pos);
-      if (strContent !== '') {
-        // 插入span
-        const spanItem: SpanItem = new SpanItem(SpanType.TEXT, strContent, '');
-        msgBase.spanItems.push(spanItem);
-        strContent = '';
-      }
-      if (posPng !== -1) {
-        // 获取表情资源
-        const imgSrc: string = strMessage.substring(posPng - EMOJI_FILENAME_LEN, posPng + EMOJI_SUFFIX.length);
-        // 插入imageSpan
-        const spanItem: SpanItem = new SpanItem(SpanType.IMAGE, '', imgSrc);
-        msgBase.spanItems.push(spanItem);
-        // 信息重新初始话为表情后面部分
-        strMessage = strMessage.substring(posPng + EMOJI_SUFFIX.length);
-      } else {
-        // 没匹配到.png，显示为文字
-        strContent += EMOJI_RESOURCE;
-        // 插入插入span
-        const spanItem: SpanItem = new SpanItem(SpanType.TEXT, strContent, '');
-        msgBase.spanItems.push(spanItem);
-        // 获取剩余聊天信息
-        strMessage = strMessage.substring(pos + EMOJI_RESOURCE.length);
-        // 清空当前span
-        strContent = '';
-      }
-      pos = strMessage.indexOf(EMOJI_RESOURCE);
-    }
-    // 插入剩余聊天内容到span
-    const spanItem: SpanItem = new SpanItem(SpanType.TEXT, strMessage, '');
-    msgBase.spanItems.push(spanItem);
-    logger.info(TAG, 'spanItem len:' + msgBase.spanItems.length.toString());
-  }
 
+  /**
+   * 获取聊天记录
+   */
+  getChatMessage() {
+    // 预加载三条聊天信息
+    const chatMsg1: string = getContext(this)
+      .resourceManager
+      .getStringSync($r("app.string.chat_with_expression_msg_1"));
+    let msgBase1 = new MessageBase(true, USER_NAME_MYSELF, this.HEAD_IMAGE_MYSELF, this.msgMaxWidth);
+    dealImageResMsg(msgBase1, chatMsg1);
+    this.textDetailData.pushData(msgBase1);
+
+    const chatMsg2: string = getContext(this)
+      .resourceManager
+      .getStringSync($r("app.string.chat_with_expression_msg_2"));
+    let msgBase2 = new MessageBase(false, USER_NAME_OTHER, this.HEAD_IMAGE_OTHER, this.msgMaxWidth);
+    dealImageResMsg(msgBase2, chatMsg2);
+    this.textDetailData.pushData(msgBase2);
+
+    const chatMsg3: string = getContext(this)
+      .resourceManager
+      .getStringSync($r("app.string.chat_with_expression_msg_3"));
+    let msgBase3 = new MessageBase(true, USER_NAME_MYSELF, this.HEAD_IMAGE_MYSELF, this.msgMaxWidth);
+    dealImageResMsg(msgBase3, chatMsg3);
+    this.textDetailData.pushData(msgBase3);
+  }
+  /**
+   * 初始化聊天信息
+   */
+  initChatMessages() {
+    const other = AppStorage.get('selectedChat') as string
+    const me = getStudentId()
+    getAppChatmessages(getStudentId(), other).then((res: Array<MessageModel>) => {
+      console.log(this.TAG, '获取聊天记录成功', JSON.stringify(res))
+      res.forEach((item: MessageModel) => {
+
+        if(item.sender == me) {
+          let msgBase = new MessageBase(true, USER_NAME_MYSELF, this.HEAD_IMAGE_MYSELF, this.msgMaxWidth);
+          dealImageResMsg(msgBase, item.content)
+          this.textDetailData.pushData(msgBase)
+        } else {
+          let msgBase = new MessageBase(false, USER_NAME_OTHER, this.HEAD_IMAGE_OTHER, this.msgMaxWidth);
+          dealImageResMsg(msgBase, item.content)
+          this.textDetailData.pushData(msgBase)
+        }
+      })
+    }).catch((err: string)=>{
+      console.log(this.TAG, '获取聊天记录失败', err)
+    })
+  }
+  /**
+   * 初始化双方信息
+   */
+  async initMineAndOtherInfo() {
+    this.mineInfo = AppStorage.get('mineSimpleInfo') as UserSimpleInfo
+    this.HEAD_IMAGE_MYSELF = this.mineInfo.avatar
+    // const other = AppStorage.get('selectedChat') as string
+    await searchFriend(getStudentId(), AppStorage.get('selectedChat') as string).then((res: UserSimpleInfo) => {
+      console.log(TAG, '获取对方信息成功', JSON.stringify(res))
+      this.HEAD_IMAGE_OTHER = res.avatar
+      this.otherInfo = res
+      this.isLoading = false
+    }).catch((err: string) => {
+      console.error(TAG, '获取对方信息失败', err)
+    })
+  }
   /**
    * 发送聊天消息
    */
   async sendChatMsg(): Promise<void> {
-    let msgBase = new MessageBase(true, USER_NAME_MYSELF, HEAD_IMAGE_MYSELF, this.msgMaxWidth);
+    let msgBase = new MessageBase(true, USER_NAME_MYSELF, this.HEAD_IMAGE_MYSELF, this.msgMaxWidth);
+    // 清空message
+    this.message = ""
     // 获取发送信息
     this.controllerRich.getSpans({
       start: this.start,
@@ -185,18 +223,22 @@ struct ChatPage {
         if (imageMsg !== undefined) {
           const spanItem: SpanItem = new SpanItem(SpanType.IMAGE, '', imageMsg.toString().substring(EMOJI_SRC_POS));
           msgBase.spanItems.push(spanItem);
+          this.message += imageMsg.toString()
         }
       } else {
         // TODO 知识点：处理文字span信息
         const textMsg: string = (item as RichEditorTextSpanResult).value;
         const spanItem: SpanItem = new SpanItem(SpanType.TEXT, textMsg, '');
         msgBase.spanItems.push(spanItem);
+        this.message += textMsg
       }
     })
-    logger.info(TAG, 'sendChatMsg spanItems:' + msgBase.spanItems.length.toString());
+    logger.info(TAG, '发送的消息内容:' + this.message);
     // 发送
     if (msgBase.spanItems.length !== 0) {
       this.textDetailData.pushData(msgBase);
+      sendChatMessage("admin", this.message)
+      logger.info(TAG, '消息列表:' + JSON.stringify(this.textDetailData.msgList));
       this.msgNums = this.textDetailData.totalCount();
       this.controllerRich.deleteSpans();
       this.controllerRich.setCaretOffset(-1);
@@ -206,6 +248,40 @@ struct ChatPage {
 
   build() {
     Column() {
+      Row() {
+        Image($r('app.media.ic_left_arrow'))
+          .width(20)
+          .height(20)
+          .onClick(() => {
+            readed(this.otherInfo.studentId, getStudentId()).then(() => {
+              AppStorage.set("selectedChat", "")
+              router.back();
+            }).catch((err: string) => {
+              showBottomError(this.getUIContext(), err)
+            })
+
+          })
+        Column() {
+          Text(this.otherInfo.nickname)
+            .fontSize(20)
+          Text(this.otherInfo.studentId)
+            .fontSize(14)
+        }
+        .padding({left: 20, top: 5})
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+        .height(50)
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/friends/InfoCard',
+            params: mockInfo()
+          })
+        })
+      }
+      .width('100%')
+      .height(50)
+      .padding({left: 10})
+      .backgroundColor(Color.White)
       // 聊天对话框
       List({
         scroller: this.scroller,
@@ -214,9 +290,9 @@ struct ChatPage {
         LazyForEach(this.textDetailData, (msg: MessageBase) => {
           ListItem() {
             if (msg.isSelf) {
-              MessageItemSelfView({ msg: msg });
+              MessageItemSelfView({ msg: msg, userInfo: this.mineInfo});
             } else {
-              MessageItemView({ msg: msg });
+              MessageItemView({ msg: msg,  userInfo: this.otherInfo });
             }
           }
         })
@@ -240,7 +316,6 @@ struct ChatPage {
       .width($r('app.string.chat_with_expression_layout_100'))
       .height($r('app.string.chat_with_expression_layout_80'))
       .layoutWeight(LAYOUT_WEIGHT)
-
       // 底部输入框
       Row() {
         Image($r('app.media.chatting_mode_voice'))
@@ -356,15 +431,28 @@ struct ChatPage {
     .height($r('app.string.chat_with_expression_layout_100'))
   }
 }
-
+/**
+ * ---------------------------------
+ *
+ *
+ *
+ *
+ *
+ *
+ * ---------------------------------
+ */
 // 本人单条聊天信息
 @Component
 @Reusable
 export struct MessageItemSelfView {
   @State msg: MessageBase = new MessageBase(true, '', '', 0);
 
-  aboutToReuse(params: Record<string, MessageBase>) {
-    this.msg = params.msg;
+  @State userInfo: UserSimpleInfo = new UserSimpleInfo('', '', '', '');
+
+  aboutToReuse(params: object) {
+    const realParams = params as Params;
+    this.msg = realParams.msg;
+    this.userInfo = realParams.userInfo;
   }
 
   build() {
@@ -405,9 +493,8 @@ export struct MessageItemSelfView {
         left: MSG_LEFT_RIGHT_PADDING,
         right: MSG_LEFT_RIGHT_PADDING
       })
-
       // 用户头像
-      Image($rawfile(this.msg.profilePicture))
+      Image(this.msg.profilePicture)
         .objectFit(ImageFit.Fill)
         .width(MSG_HEADIMG_SIZE)
         .height(MSG_HEADIMG_SIZE)
@@ -416,6 +503,12 @@ export struct MessageItemSelfView {
           top: 0,
           left: HEAD_IMAGE_MSG_PADDING,
           right: HEAD_IMAGE_EDGE_PADDING,
+        })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/friends/InfoCard',
+            params: this.userInfo
+          })
         })
     }
     .width($r('app.string.chat_with_expression_layout_100'))
@@ -430,15 +523,18 @@ export struct MessageItemSelfView {
 @Reusable
 export struct MessageItemView {
   @State msg: MessageBase = new MessageBase(true, '', '', 0);
+  @State userInfo: UserSimpleInfo = new UserSimpleInfo('', '', '', '');
 
-  aboutToReuse(params: Record<string, MessageBase>) {
-    this.msg = params.msg;
+  aboutToReuse(params: object) {
+    const realParams = params as Params;
+    this.msg = realParams.msg;
+    this.userInfo = realParams.userInfo;
   }
 
   build() {
     Row() {
       // 用户头像
-      Image($rawfile(this.msg.profilePicture))
+      Image(this.msg.profilePicture)
         .objectFit(ImageFit.Fill)
         .width(MSG_HEADIMG_SIZE)
         .height(MSG_HEADIMG_SIZE)
@@ -447,6 +543,12 @@ export struct MessageItemView {
           top: 0,
           left: HEAD_IMAGE_EDGE_PADDING,
           right: HEAD_IMAGE_MSG_PADDING,
+        })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/friends/InfoCard',
+            params: this.userInfo
+          })
         })
       // 聊天信息
       Row() {

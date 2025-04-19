@@ -67,6 +67,14 @@
     {
       "name": "chat_with_expression_detail_item_message_background",
       "value": "#D0E9F3"
+    },
+    {
+      "name": "blue_theme_1",
+      "value": "#368AEF"
+    },
+    {
+      "name": "blue_theme_2",
+      "value": "#FF0067D7"
     }
   ]
 }

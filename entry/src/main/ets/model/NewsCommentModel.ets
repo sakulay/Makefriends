@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { UserSimpleInfo } from "../viewmodel/UserProfileModel";
 
 /**
  * 评论的数据结构
@@ -20,10 +21,12 @@ export class NewsCommentModel {
   // 评论id
   public id: string;
   // 评论头像
-  public url: ResourceStr;
+  public url: ResourceStr | string;
   // 评论昵称
   public user: string;
-  // 回复id
+  // 用户id
+  public userInfo?: UserSimpleInfo;
+  // 回复id 通ParentId
   public replyId: string;
   // 回复用户昵称
   public replyUser: string;
@@ -36,10 +39,11 @@ export class NewsCommentModel {
   // 评论下的回复列表
   public replyList: NewsCommentData;
 
-  constructor(id: string, url: ResourceStr, user: string, replyId: string, replyUser: string, text: string, commentTime: Date, likeCount: number, replyList: NewsCommentData) {
+  constructor(id: string, url: ResourceStr | string, user: string, replyId: string, replyUser: string, text: string, commentTime: Date, likeCount: number, replyList: NewsCommentData, userInfo?: UserSimpleInfo) {
     this.id = id;
     this.url = url;
     this.user = user;
+    this.userInfo = userInfo;
     this.replyId = replyId;
     this.replyUser = replyUser;
     this.text = text;

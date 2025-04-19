@@ -9,6 +9,13 @@
     "pages/post/Post",
     "pages/post/RecPost",
     "pages/post/PostPage",
-    "pages/chat/ChatPage"
+    "pages/chat/ChatPage",
+    "pages/post/AddPost",
+    "pages/Login",
+    "pages/Register",
+    "pages/EntryPage",
+    "pages/Test",
+    "pages/post/MinePost",
+    "pages/friends/FriendRequest"
   ]
 }

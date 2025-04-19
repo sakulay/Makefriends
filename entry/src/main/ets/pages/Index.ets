@@ -5,8 +5,10 @@ import { LogInPage } from './LogInPage';
 import { Messages } from './chat/Messages';
 import { Mine } from './mine/Mine';
 import { News } from './News';
-import { BotItem, TopItem } from './utils/Mock';
+import { BotItem, TopItem } from '../utils/Mock';
 import { initMessage, MessageModel } from '../model/MessageModel';
+import { initMineSimpleInfo } from '../viewmodel/UserProfileModel';
+import { DownloadImagePage } from './Test';
 
 @Entry
 @Component
@@ -23,6 +25,7 @@ struct Index {
   aboutToAppear(): void {
     initMessage()
     // this.unreadListLink = AppStorage.get("unread") as Array<MessageModel>
+    initMineSimpleInfo()
     console.log("index: ", AppStorage.get("unread"))
   }
   @Builder
@@ -34,7 +37,7 @@ struct Index {
         .objectFit(ImageFit.Contain)
       Text(item.text)
         .fontSize(12)
-        .fontColor(this.botSelect === index ? '#f04142' : '#000')
+        .fontColor(this.botSelect === index ? $r('app.color.blue_theme_2') : '#000')
         .margin({ top: 4 })
     }
     .border({ width: { top: 1 }, color: '#ffe9e9e9' })
@@ -133,7 +136,8 @@ struct Index {
           }, 0))
 
           TabContent() {
-            News()
+            // News()
+            DownloadImagePage()
           }
           .tabBar(this.TabBotBuilder({
             icon_normal: $r('app.media.ic_public_news'),

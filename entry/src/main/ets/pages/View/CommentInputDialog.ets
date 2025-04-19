@@ -78,7 +78,7 @@ export struct CommentInputDialog {
               this.publish();
               this.controller.close();
               this.textInComment = "";
-              promptAction.showToast({ message: "评论成功" });
+              // promptAction.showToast({ message: "评论成功" });
               this.commentState = true;
             }
           })
