@@ -1,6 +1,7 @@
 import { TopItem } from "../../utils/Mock"
 import { MinePost } from "./MinePost"
 import { RecPost } from "./RecPost"
+import { router } from "@kit.ArkUI"
 
 @Entry
 @Component
@@ -65,6 +66,11 @@ export struct Home {
             Image($r('app.media.ic_search'))
               .width(30)
               .height(30)
+              .onClick(() => {
+                router.pushUrl({
+                  url: 'pages/search/SearchPage'
+                })
+              })
             Image($r('app.media.ic_email'))
               .width(25)
               .height(25)

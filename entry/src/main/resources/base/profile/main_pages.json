@@ -18,6 +18,8 @@
     "pages/post/MinePost",
     "pages/friends/FriendRequest",
     "pages/News/News",
-    "pages/News/NewsItem"
+    "pages/News/NewsItem",
+    "pages/search/SearchPage",
+    "pages/search/SearchResult"
   ]
 }
