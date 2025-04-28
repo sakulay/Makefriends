@@ -46,30 +46,71 @@ struct News {
     ForEach(this.newsList, (item: NewsModel)=>{
       Column() {
         Row() {
-          Text(item.title)
+          // 左侧装饰条
+          Column()
+            .width(4)
+            .height(40)
+            .backgroundColor('#FF6B6B')
+            .borderRadius(2)
+            .margin({ right: 12 })
+
+          // 右侧内容区
+          Column() {
+            // 标题
+            Text(item.title)
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor('#333333')
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .margin({ bottom: 8 })
+
+            // 底部信息栏
+            Row() {
+              // 日期
+              Row() {
+                Image($r('app.media.ic_time'))
+                  .width(14)
+                  .height(14)
+                  .margin({ right: 4 })
+                Text(item.date)
+                  .fontSize(12)
+                  .fontColor('#999999')
+              }
+
+              Blank()
+
+              // 阅读更多
+              Row() {
+                Text('阅读更多')
+                  .fontSize(12)
+                  .fontColor('#FF6B6B')
+                Image($r('app.media.ic_right_arrow'))
+                  .width(12)
+                  .height(12)
+                  .margin({ left: 4 })
+              }
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Center)
+          }
+          .layoutWeight(1)
         }
         .width('100%')
-        .justifyContent(FlexAlign.Start)
-        Row() {
-          Text(item.date)
-        }
-        .width('100%')
-        .margin({top: 7, right: 5})
-        .justifyContent(FlexAlign.End)
+        .alignItems(VerticalAlign.Center)
       }
       .width('94%')
-      .constraintSize({minHeight: 80})
-      .padding({left: 13, right: 13, top: 17, bottom: 10})
+      .constraintSize({minHeight: 90})
+      .padding({left: 16, right: 16, top: 16, bottom: 16})
       .backgroundColor(Color.White)
-      .justifyContent(FlexAlign.SpaceBetween)
       .shadow({
-        radius: 12,         // 模糊多一点，看起来轻盈
-        color: 'rgba(0, 0, 0, 0.06)',
+        radius: 8,
+        color: 'rgba(0, 0, 0, 0.08)',
         offsetX: 0,
-        offsetY: 4           // 垂直轻微抬起
+        offsetY: 2
       })
       .borderRadius(12)
-      .margin({top: 2, bottom: 12})
+      .margin({top: 8, bottom: 8})
       .onClick(()=>{
         router.pushUrl({
           url: 'pages/News/NewsItem',
