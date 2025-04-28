@@ -2,6 +2,9 @@ import { getUnreadList, MessageModel, Unread } from "../../model/MessageModel"
 import { router } from "@kit.ArkUI"
 import { getAppChatUnreads } from "../../api/chatApi"
 import { getStudentId } from "../../utils/utils"
+import { dealImageResMsg } from "../../utils/MessageUtils"
+import { MessageBase, SpanItem } from "../../model/Message"
+import { SpanType } from "../../common/ChatConstants"
 
 @Entry
 @Component
@@ -18,6 +21,7 @@ export struct Messages {
       console.log(this.TAG, "获取未读消息列表失败", err)
     })
   }
+
   @Builder
   unreadListBuilder() {
     ForEach(this.unreadListLink, (item: Unread)=>{
@@ -32,18 +36,41 @@ export struct Messages {
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
 
-          Text(item.latestContent)
+          Row() {
+            Text(undefined) {
+              ForEach(this.processContent(item.latestContent), (spanItem: SpanItem) => {
+                if (spanItem.spanType === SpanType.IMAGE) {
+                  ImageSpan($rawfile(spanItem.imgSrc))
+                    .width(20)
+                    .height(20)
+                    .verticalAlign(ImageSpanAlignment.BOTTOM)
+                    .margin({ right: 2 })
+                } else if (spanItem.spanType === SpanType.TEXT) {
+                  Span(spanItem.text)
+                }
+              })
+            }
             .fontSize(14)
+            .fontColor('#666666')
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
+          .constraintSize({
+            minHeight: 20,
+            maxWidth: '100%'
+          })
         }
-        .margin({ left: '10' })
+        .margin({ left: 10 })
         .height(45)
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
         .justifyContent(FlexAlign.SpaceBetween)
+
         if(item.unreadCount != '0') {
           Column() {
-            Text( item.unreadCount )
-              .fontSize(15)
+            Text(item.unreadCount)
+              .fontSize(12)
               .fontColor(Color.White)
           }
           .width(19)
@@ -62,6 +89,12 @@ export struct Messages {
         router.pushUrl({url: 'pages/chat/ChatPage'})
       })
     })
+  }
+
+  private processContent(content: string): Array<SpanItem> {
+    const msgBase = new MessageBase(true, '', '', 0);
+    dealImageResMsg(msgBase, content);
+    return msgBase.spanItems;
   }
 
   build() {
