@@ -4,7 +4,7 @@ import { Home } from './post/Post';
 import { LogInPage } from './LogInPage';
 import { Messages } from './chat/Messages';
 import { Mine } from './mine/Mine';
-import { News } from './News';
+import { News } from './News/News';
 import { BotItem, TopItem } from '../utils/Mock';
 import { initMessage, MessageModel } from '../model/MessageModel';
 import { initMineSimpleInfo } from '../viewmodel/UserProfileModel';
@@ -136,8 +136,8 @@ struct Index {
           }, 0))
 
           TabContent() {
-            // News()
-            DownloadImagePage()
+            News()
+            // DownloadImagePage()
           }
           .tabBar(this.TabBotBuilder({
             icon_normal: $r('app.media.ic_public_news'),

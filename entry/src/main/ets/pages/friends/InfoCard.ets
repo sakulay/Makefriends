@@ -66,7 +66,9 @@ export struct InfoCard {
     if(this.status == 0) {
       this.showToast('已提交好友申请，请耐心等待')
     } else if(this.status == 1) {
-      this.showToast('跳转到发送消息页面')
+      // this.showToast('跳转到发送消息页面')
+      AppStorage.set("selectedChat", this.info.studentId)
+      router.pushUrl({url: 'pages/chat/ChatPage'})
     } else {
       addFriendRequest(new FriendRequestForm(getStudentId(), this.info.studentId)).then(()=>{
         this.status = 0

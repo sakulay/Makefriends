@@ -304,18 +304,18 @@ struct AddPost {
         })
       }
       .width('100%')
-      Button("点击")
-        .width('60%')
-        .onClick(() => {
-          if(this.tt == 0) {
-            this.imgs.push(new PostImage('', '', 'http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg', ''))
-            this.tt++
-          } else {
-            this.imgs.push(new PostImage('', '', 'http://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1CRajx.img', ''))
-            this.tt--
-          }
-          console.log(JSON.stringify(this.post.imageList))
-        })
+      // Button("点击")
+      //   .width('60%')
+      //   .onClick(() => {
+      //     if(this.tt == 0) {
+      //       this.imgs.push(new PostImage('', '', 'http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg', ''))
+      //       this.tt++
+      //     } else {
+      //       this.imgs.push(new PostImage('', '', 'http://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1CRajx.img', ''))
+      //       this.tt--
+      //     }
+      //     console.log(JSON.stringify(this.post.imageList))
+      //   })
     }
     .constraintSize({minHeight: "100%"})
     .width('100%')

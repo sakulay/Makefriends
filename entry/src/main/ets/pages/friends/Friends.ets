@@ -15,22 +15,9 @@ export struct Friends {
   ]
 
   async aboutToAppear(): Promise<void> {
-    // const info = AppStorage.get('mineSimpleInfo') as UserSimpleInfo
-    // console.log('获取个人信息成功: ', JSON.stringify(info))
+
   }
 
-  // async onPageShow(): Promise<void> {
-  //   console.log(`${this.LOG} 页面展示`)
-  //   const studentId = getStudentId();
-  //   // const studentId = "14"
-  //   try{
-  //     const res = await getFriendsList(studentId)
-  //     console.log(this.LOG, '获取好友列表成功: ', JSON.stringify(res))
-  //     this.friends = res.list
-  //   }catch(err){
-  //     console.error(this.LOG, '获取好友列表失败: ', err)
-  //   }
-  // }
   onPageShow() {
     console.log(`${this.LOG} 页面展示`)
     const studentId = getStudentId();

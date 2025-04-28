@@ -10,9 +10,8 @@ import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
 struct AddFriends {
   // @State status: number = 2
   @State text: string = '添加'
-  // @State info: PersonalInfo = new PersonalInfo(2101510218, 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', '林键超', '我自横刀向天笑，去留肝胆两昆仑', 1)
-  @State info: UserSimpleInfo = new UserSimpleInfo('2101510218','林键超', 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', '我自横刀向天笑，去留肝胆两昆仑', '', 1)
-  // @State info?: UserSimpleInfo = undefined
+  // @State info: UserSimpleInfo = new UserSimpleInfo('2101510218','林键超', 'http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg', '我自横刀向天笑，去留肝胆两昆仑', '', 1)
+  @State info?: UserSimpleInfo = undefined
   @State studentId: string = '14'
   @State friendId: string = ''
   private uiContext: UIContext = this.getUIContext()
@@ -62,7 +61,7 @@ struct AddFriends {
         this.showToast('对方已是你的好友，不能重复添加')
       } else {
         addFriendRequest(new FriendRequestForm(this.studentId, this.info.studentId)).then(()=>{
-          this.info.status = 0
+          this.info!.status = 0
           this.text = "待处理"
           this.showToast('已发送好友申请')
         }).catch((error: string) => {

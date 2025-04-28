@@ -8,9 +8,8 @@ import { AuthenticationToken } from "../viewmodel/AuthModel";
 
 
 let messageList = new TextDetailData()
-const url: string = 'ws://192.168.209.225:8989/ws'
+const url: string = `ws://${HttpConstant.DOMIN}:8989/ws`
 // const token: string = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdHVkZW50SWQiOiIxOSIsInN1YiI6IjE5IiwiZGF0YVNjb3BlIjowLCJleHAiOjE3NDUwMzg0MjYsImlhdCI6MTc0NTAzMTIyNiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9TVFVERU5UIl0sImp0aSI6Ijc5OGJkNGY4NmViMjQyOWE4MDMxZjFjYzkzMTY3NDFmIn0.SEBeDf5n59w9vsbRGZwq2t21tFB4o2Dr4lIiySWeYYY'
-const client: Client = new Client()
 const ws = webSocket.createWebSocket()
 const LOG = '[MessageModel]'
 
@@ -46,10 +45,10 @@ export class Unread{
 
 export function getUnreadList(): Array<Unread> {
   let list: Array<Unread> = []
-  list.push(new Unread("19", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "mike", "你好", '1'))
-  list.push(new Unread("11", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "anson", "你好1", '1'))
-  list.push(new Unread("2101510218", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "yuyu", "你好2", '1'))
-  list.push(new Unread("4689", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "ljc", "你好33333333", '1'))
+  // list.push(new Unread("19", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "mike", "你好", '1'))
+  // list.push(new Unread("11", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "anson", "你好1", '1'))
+  // list.push(new Unread("2101510218", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "yuyu", "你好2", '1'))
+  // list.push(new Unread("4689", "http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg", "ljc", "你好33333333", '1'))
   return list;
 }
 // 未读消息列表

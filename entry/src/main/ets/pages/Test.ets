@@ -1,60 +1,104 @@
 // pages/DownloadImage.ets
-import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import { fileIo } from '@kit.CoreFileKit';
-import { http } from '@kit.NetworkKit';
+import { common } from "@kit.AbilityKit";
+import { photoAccessHelper } from "@kit.MediaLibraryKit";
+import { fileIo } from "@kit.CoreFileKit";
+import { promptAction } from "@kit.ArkUI";
+import { BusinessError } from "@kit.BasicServicesKit";
+import { http } from "@kit.NetworkKit";
+
+/** 保存图片至相册 */
+async function savePhotoToGallery(context: common.UIAbilityContext) {
+  let helper = photoAccessHelper.getPhotoAccessHelper(context);
+  try {
+    // onClick触发后10秒内通过createAsset接口创建图片文件，10秒后createAsset权限收回。
+    let uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg');
+    // 使用uri打开文件，可以持续写入内容，写入过程不受时间限制
+    let file = await fileIo.open(uri, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
+    // $r('app.media.startIcon')需要替换为开发者所需的图像资源文件
+    context.resourceManager.getMediaContent(
+      $r('app.media.pic4').id,
+      0)
+      .then(async value => {
+        let media = value.buffer;
+        // 写到媒体库文件中
+        await fileIo.write(file.fd, media);
+        await fileIo.close(file.fd);
+        promptAction.showToast({ message: '已保存至相册！' });
+      });
+  }
+  catch (error) {
+    const err: BusinessError = error as BusinessError;
+    console.error(`Failed to save photo. Code is ${err.code}, message is ${err.message}`);
+  }
+}
 
 
 @Entry
 @Component
 export struct DownloadImagePage {
-  @State imageUrl: string = ''; // 替换成你的图片URL
-  private LOG = '[DownloadImagePage]';
-
-  async downloadAndSaveImage() {
+  async  saveImageFromUrlToAlbum(imageUrl: string): Promise<void> {
     try {
-      // 1. 下载图片为 ArrayBuffer
-      const res = await http.createHttp().request(this.imageUrl, {
-        method: http.RequestMethod.GET,
-        readTimeout: 6000,
-        connectTimeout: 3000,
-        expectDataType: http.HttpDataType.ARRAY_BUFFER
-      });
+      const context = getContext(this)
+      const helper = photoAccessHelper.getPhotoAccessHelper(context)
 
-      const buffer: Uint8Array = res.result as Uint8Array;
+      // Step 1: 下载图片文件
+      const httpRequest = http.createHttp()
+      const response = await httpRequest.request(
+        imageUrl,
+        {
+          method: http.RequestMethod.GET,
+          readTimeout: 6000,
+          connectTimeout: 3000,
+          expectDataType: http.HttpDataType.ARRAY_BUFFER
+        }
+      )
 
-      // 2. 获取授权的媒体库保存路径（10秒有效）
-      const context = getContext(this);
-      const helper = photoAccessHelper.getPhotoAccessHelper(context);
-      const uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg'); // 创建文件
+      if (!response.result || !response.responseCode.toString().startsWith("2")) {
+        console.error('图片下载失败:', JSON.stringify(response))
+        return
+      }
 
-      // 3. 使用 fileIo 写入文件
-      const file = await fileIo.open(uri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE);
-      await fileIo.write(file.fd, buffer);
-      await fileIo.close(file.fd);
+      const imageData = response.result as ArrayBuffer
 
-      console.info(`${this.LOG} 图片保存成功`);
-    } catch (error) {
-      console.error(`${this.LOG} 保存失败: ` + JSON.stringify(error));
+      // Step 2: 创建图片文件到相册
+      const uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg')  // 使用jpg或png取决于你的图片格式
+      const file = await fileIo.open(uri, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE)
+
+      // Step 3: 写入图片数据
+      await fileIo.write(file.fd, imageData)
+
+      // Step 4: 关闭文件
+      await fileIo.close(file.fd)
+
+      console.info('图片保存成功')
+    } catch (err) {
+      console.error('保存图片失败:', JSON.stringify(err))
     }
   }
-
+  /** 保存图片至相册 */
+  @Builder
+  savePic() {
+    SaveButton().onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+      if (result === SaveButtonOnClickResult.SUCCESS) {
+        const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+        // 免去权限申请和权限请求等环节，获得临时授权，保存对应图片
+        savePhotoToGallery(context);
+      } else {
+        promptAction.showToast({ message: '设置权限失败！' })
+      }
+    })
+  }
   build() {
-    Column({ space: 20 }) {
-      Text(this.imageUrl)
-      TextInput({text: $$this.imageUrl}).width('100%').height(50)
-
-      // 必须使用 SaveButton 才能触发权限
-      SaveButton({ icon: SaveIconStyle.FULL_FILLED, buttonType: ButtonType.Capsule })
-        .onClick(async (event, result) => {
-          if (result === SaveButtonOnClickResult.SUCCESS) {
-            await this.downloadAndSaveImage();
-          } else {
-            console.error(`${this.LOG} 权限拒绝或异常: result=${result}`);
-          }
+    Column() {
+      Text("资讯")
+      this.savePic()
+      Button("保存图片")
+        .onClick(() => {
+          this.saveImageFromUrlToAlbum("https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1CPbcv.img?w=630&h=440&m=6")
         })
     }
-    .padding(20)
-    .width('100%')
     .height('100%')
+    .width('100%')
+    .justifyContent(FlexAlign.Center)
   }
 }

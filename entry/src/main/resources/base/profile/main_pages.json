@@ -16,6 +16,8 @@
     "pages/EntryPage",
     "pages/Test",
     "pages/post/MinePost",
-    "pages/friends/FriendRequest"
+    "pages/friends/FriendRequest",
+    "pages/News/News",
+    "pages/News/NewsItem"
   ]
 }

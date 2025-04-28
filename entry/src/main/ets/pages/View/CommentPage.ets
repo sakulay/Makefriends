@@ -17,8 +17,12 @@ import { NewsCommentData, NewsCommentModel } from '../../model/NewsCommentModel'
 import { CommonConstants } from '../../common/CommonConstants';
 import { promptAction } from '@kit.ArkUI';
 
+import { CustomDialogExample } from './DialogBottom';
+import { ReportForm } from '../../api/reportApi';
+
 const FONT_WEIGHT_FIVE_HUNDRED = 500; // 字体粗细
 const FONT_WEIGHT_FOUR_HUNDRED = 400; // 字体粗细
+
 
 @Component
 export struct CommentPage {
@@ -35,7 +39,8 @@ export struct CommentPage {
   // 记录评论的时间状态，true表示新评论的时间需要显示“刚刚”，false为默认时间。
   @Link commentState: boolean;
   @Link commentStatus: boolean;
-
+  @State cnt: number = 0;
+  @State reportForm: ReportForm = new ReportForm(1, "", "");
   /**
    * 弹窗函数
    */
@@ -43,6 +48,25 @@ export struct CommentPage {
     promptAction.showToast({
       message: $r('app.string.container_nested_only_show_for_ux')
     })
+  }
+  dialogControllerBottom: CustomDialogController | null = new CustomDialogController({
+    builder: CustomDialogExample({reportForm: this.reportForm}),
+    openAnimation: {
+      curve: Curve.Friction,
+      playMode: PlayMode.Alternate,
+    },
+    autoCancel: true,
+    alignment: DialogAlignment.Bottom,
+    width: '90%',
+    height: "10%",
+    gridCount: 2,
+    customStyle: false,
+    cornerRadius: 10,
+  })
+
+  // 在自定义组件即将析构销毁时将dialogController置空
+  aboutToDisappear() {
+    this.dialogController = null // 将dialogController置空
   }
 
   build() {
@@ -111,6 +135,14 @@ export struct CommentPage {
       }
       .alignItems(VerticalAlign.Top)
       .width("100%")
+      .gesture(LongPressGesture(
+        {repeat: false}).onAction(() => {
+        this.reportForm.complaintTargetId = this.commonData.id
+        this.reportForm.complaintTargetType = 2
+        this.dialogControllerBottom?.open()
+
+      })
+      )
 
       Column() {
         // TODO：性能知识点：使用LazyForEach加载评论列表，可以按需加载，解决一次性加载全部列表数据引起的卡顿问题，提高页面响应速度
@@ -155,11 +187,11 @@ export struct CommentPage {
                 .fontColor($r('app.color.container_nested_color_blank'))
               // 时间、ip、回复
               Row() {
-                Text($r('app.string.container_nested_time_place1'))
-                  .fontSize($r('app.integer.container_nested_font_size'))
-                  .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
-                  .opacity(0.5)
-                  .fontColor($r('app.color.container_nested_color_blank'))
+                // Text($r('app.string.container_nested_time_place1'))
+                //   .fontSize($r('app.integer.container_nested_font_size'))
+                //   .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
+                //   .opacity(0.5)
+                //   .fontColor($r('app.color.container_nested_color_blank'))
                 // Text($r('app.string.container_nested_reply'))
                 //   .fontSize($r('app.integer.container_nested_font_size'))
                 //   .fontWeight(FONT_WEIGHT_FOUR_HUNDRED)
@@ -191,6 +223,14 @@ export struct CommentPage {
             bottom: $r('app.integer.container_nested_row_margin_bottom'),
             top: $r('app.integer.container_nested_row_margin_top')
           })
+          .gesture(LongPressGesture(
+            {repeat: false}).onAction(() => {
+            this.reportForm.complaintTargetId = reply.id
+            this.reportForm.complaintTargetType = 2
+            this.dialogControllerBottom?.open()
+            })
+          )
+
         }, (item: NewsCommentModel) => item.id.toString())
       }
       .margin({

@@ -348,8 +348,8 @@ struct MineDetail{
           this.stuNum(this.studentId)
           this.gender()
           this.bio()
-          this.savePic()
-          this.uploadPic1()
+          // this.savePic()
+          // this.uploadPic1()
         }
         .width('100%')
         .backgroundColor(Color.White)

@@ -147,7 +147,8 @@ export struct Mine {
     }
     .height('100%')
     .width('100%')
-    .backgroundColor('#f1f0f0')
+    // .backgroundColor('#f1f0f0')
+    .backgroundColor('#fff8f7f7')
     // 根据显示区域判断
     .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean, currentRatio: number) => {
       if (isVisible && currentRatio == 1.0) {

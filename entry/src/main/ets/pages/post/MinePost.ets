@@ -1,5 +1,5 @@
 import { getRecPostList, PostModel, PostQuery } from '../../api/postApi'
-import { showBottomError } from '../../utils/toast'
+import { showBottomError, showBottomToast } from '../../utils/toast'
 import { EmptyPage } from '../components/EmptyPage'
 import { PostCard } from '../components/PostCard'
 import { router } from '@kit.ArkUI'
@@ -12,14 +12,23 @@ export struct MinePost {
   @State scrollPosition: number = 0
   @State buttonOpacity: number = 0.9
   @State buttonShow: boolean = true
+  @State page: number = 1
+  @State isNone: boolean = false
+  @State isLoading: boolean = false
+  onPageShow(): void {
+    this.getList()
+  }
 
-  onPageShow() {
+  aboutToAppear() {
+  }
+
+  getList() {
     const id = getStudentId()
-    const queryParam = new PostQuery(1, 10, 1, Number(id))
+    const queryParam = new PostQuery(this.page, 10, 1, Number(id))
     //
     getRecPostList(queryParam).then((res) => {
       console.log('获取推荐帖子成功: ', JSON.stringify(res))
-      this.postList = res.list
+      this.postList.push(...res.list)
       this.postList.forEach((item: PostModel) => {
         console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
         console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
@@ -48,7 +57,7 @@ export struct MinePost {
           }
           .width('100%')
           .constraintSize({minHeight: '100%'})
-          .backgroundColor('#f1f1f1')
+          .backgroundColor('#fff8f7f7')
         }
       }
       .scrollBarWidth(0)
@@ -64,6 +73,16 @@ export struct MinePost {
           } else {
             this.buttonShow = true
             this.buttonOpacity = 0.9
+          }
+        }
+      })
+      .onScrollEdge((event)=>{
+        if(event == 2){
+          if(!this.isNone) {
+            this.page++
+            this.getList()
+          } else {
+            showBottomToast(this.getUIContext(), '没有更多了')
           }
         }
       })

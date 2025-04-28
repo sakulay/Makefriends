@@ -274,7 +274,7 @@ struct ChatPage {
         .onClick(() => {
           router.pushUrl({
             url: 'pages/friends/InfoCard',
-            params: mockInfo()
+            params: this.otherInfo
           })
         })
       }

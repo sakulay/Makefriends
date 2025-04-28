@@ -1,25 +1,21 @@
-import { Post, PostList, TopItem } from '../../utils/Mock';
-import { PostComment } from './PostComment';
+import { TopItem } from '../../utils/Mock';
 import { PostDetail } from './PostDetail';
 import { promptAction, router } from '@kit.ArkUI';
 import { CommentInputDialog } from '../View/CommentInputDialog';
 import { NewsCommentData, NewsCommentModel } from '../../model/NewsCommentModel';
 import { CommentPage } from '../View/CommentPage';
 import { CommonConstants } from '../../common/CommonConstants';
-import { mockData } from '../../mock/NewsDetailData';
-import { util } from '@kit.ArkTS';
 import { MyScroller } from '../View/Scroller';
 import { PostModel } from '../../api/postApi';
 import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
-import { showTopToast } from '../../utils/toast';
 import { AddComment, CommentForm,
   CommentModel,
   CommentQuery, getCommentPageById, saveAppPostComment } from '../../api/commentApi';
 import { Page } from '../../api/friendsApi';
-import { it } from '@ohos/hypium';
 import { getStudentId } from '../../utils/utils';
 import { CommentEmptyPage } from '../components/CommentEmptyPage';
 import { Loading } from '../components/Loading';
+import { mockData } from '../../mock/NewsDetailData';
 
 @Entry
 @Component
@@ -72,7 +68,7 @@ struct PostPage {
       this.post = params
     }
     // 添加模拟数据
-    // this.commentList = mockData();
+    this.commentList = mockData();
     getCommentPageById(new CommentQuery(1, 10, this.post.id)).then((res: Page<CommentModel>) => {
       console.log(this.LOG, `获取评论列表成功 ${JSON.stringify(res.list)}`)
       // 将获取到的评论列表数据赋值给 commentList
@@ -309,7 +305,7 @@ struct PostPage {
             .onClick(() => {
               this.likeStatus = !this.likeStatus
             })
-          Text('25')
+          Text(this.post.likeCount.toString())
             .fontColor(this.likeStatus? Color.Black : Color.Gray)
         }
         Column() {
@@ -317,10 +313,10 @@ struct PostPage {
             .width(25)
             .height(25)
             .opacity(0.6)
-          Text('25')
+          Text(this.post.commentCount.toString())
             .fontColor(Color.Gray)
         }
-        .padding({top: 2})
+        // .padding({top: 2})
         Column() {
           Image($r('app.media.ic_star'))
             .width(25)
@@ -384,13 +380,13 @@ struct PostPage {
   @Builder
   CommentTitle() {
     Row() {
-      Text($r('app.string.container_nested_comment_text'))
+      Text(`评论 ${this.post.commentCount}`)
         .fontSize(CommonConstants.FONTSIZE_TWENTY)
         .fontWeight(FontWeight.Bold)
 
       Blank()
 
-      Text($r('app.string.container_nested_comment1_text'))
+      Text(`${this.post.likeCount}赞`)
         .fontSize(CommonConstants.FOUR_TEEN_FONTSIZE)
         .fontWeight(FontWeight.Bold)
     }

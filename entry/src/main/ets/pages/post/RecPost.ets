@@ -3,38 +3,80 @@ import { router } from '@kit.ArkUI'
 import { PostCard } from '../components/PostCard'
 import { getRecPostList, PostModel, PostQuery } from '../../api/postApi'
 import { EmptyPage } from '../components/EmptyPage'
-import { showBottomError } from '../../utils/toast'
+import { showBottomError, showBottomToast } from '../../utils/toast'
+import { Loading } from '../components/Loading'
+import { CustomDialogExample } from '../View/DialogBottom'
+import { ReportForm } from '../../api/reportApi'
 
 @Entry
 @Component
 export struct RecPost {
+  private mock: string =
+    `{"id":3,"userId":14,"title":"标题3","content":"内容3","imageList":[],"likeCount":50,"commentCount":60,"createTime":"2025-02-25 12:00:00",
+    "userInfo":
+    {"studentId":"14","nickname":"林键超","avatar":"http://111.230.102.82:40061/i/2025/02/26/su2jeq-0.jpeg","gender":1,"bio":"我自横刀向天笑，去留肝胆两昆仑","deleteUrl":""}
+    }`
   private LOG = "[RecPost]"
   @State postList: PostModel[] = []
   @State scrollPosition: number = 0
   @State buttonOpacity: number = 0.9
   @State buttonShow: boolean = true
-
+  @State isNone: boolean = false
+  @State page: number = 1
+  @State isLoading: boolean = false
+  @State reportForm: ReportForm = new ReportForm(1, "", "");
   onPageShow() {
-    const queryParam = new PostQuery(1, 10, 1)
+    this.getList()
+  }
+
+  getList() {
+    this.isLoading = true
+    const queryParam = new PostQuery(this.page, 10, 1)
     getRecPostList(queryParam).then((res) => {
-      console.log('获取推荐帖子成功: ', JSON.stringify(res))
-      this.postList = res.list
-      this.postList.forEach((item: PostModel) => {
-        console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
-        console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
-      })
+      if(res.list.length > 0) {
+        console.log('获取推荐帖子成功: ', JSON.stringify(res))
+        this.postList.push(...res.list)
+        this.postList.forEach((item: PostModel) => {
+          console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
+          console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
+        })
+      } else {
+        this.isNone = true
+      }
+      this.isLoading = false
     }).catch((err: string) => {
       console.error('获取推荐帖子失败: ', err)
       showBottomError(this.getUIContext(), err)
     })
   }
-
   @Builder
   MyPostList() {
     ForEach(this.postList, (item: PostModel, index: number)=>{
       PostCard({item: item})
+        .gesture(LongPressGesture(
+          {repeat: false}).onAction(() => {
+          this.reportForm.complaintTargetId = item.id.toString()
+          this.reportForm.complaintTargetType = 1
+          this.dialogControllerBottom?.open()
+        })
+        )
     }, (item: Post) => item.id.toString())
   }
+
+  dialogControllerBottom: CustomDialogController | null = new CustomDialogController({
+    builder: CustomDialogExample({reportForm: this.reportForm}),
+    openAnimation: {
+      curve: Curve.Friction,
+      playMode: PlayMode.Alternate,
+    },
+    autoCancel: true,
+    alignment: DialogAlignment.Bottom,
+    width: '90%',
+    height: "10%",
+    gridCount: 2,
+    customStyle: false,
+    cornerRadius: 10,
+  })
 
   build() {
     Stack() {
@@ -44,10 +86,14 @@ export struct RecPost {
         } else {
           Column() {
             this.MyPostList()
+            if(this.isLoading) {
+              Loading({h: "10%", text: ''})
+                .offset({bottom: 0})
+            }
           }
           .width('100%')
           .constraintSize({minHeight: '100%'})
-          .backgroundColor('#f1f1f1')
+          .backgroundColor('#fff8f7f7')
         }
       }
       .scrollBarWidth(0)
@@ -61,10 +107,16 @@ export struct RecPost {
         } else {
           this.buttonShow = true
           this.buttonOpacity = 0.95
-          // if(this.buttonOpacity < 0.6) {
-          //   this.buttonOpacity += 0.30
-          // } else {
-          // }
+        }
+      })
+      .onScrollEdge((event)=>{
+        if(event == 2){
+          if(!this.isNone) {
+            this.page++
+            this.getList()
+          } else {
+            showBottomToast(this.getUIContext(), '没有更多了')
+          }
         }
       })
       /**
