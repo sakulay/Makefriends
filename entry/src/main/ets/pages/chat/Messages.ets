@@ -17,6 +17,8 @@ export struct Messages {
     getAppChatUnreads(getStudentId()).then((res: Array<Unread>)=>{
       console.log(this.TAG, "获取未读消息列表成功", JSON.stringify(res))
       this.unreadListLink = res
+      // 同步到AppStorage
+      AppStorage.set("unread", res)
     }).catch((err: string)=>{
       console.log(this.TAG, "获取未读消息列表失败", err)
     })

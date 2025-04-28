@@ -6,13 +6,16 @@ import { Messages } from './chat/Messages';
 import { Mine } from './mine/Mine';
 import { News } from './News/News';
 import { BotItem, TopItem } from '../utils/Mock';
-import { initMessage, MessageModel } from '../model/MessageModel';
+import { initMessage, MessageModel, Unread } from '../model/MessageModel';
 import { initMineSimpleInfo } from '../viewmodel/UserProfileModel';
 import { DownloadImagePage } from './Test';
+import { getAppChatUnreads } from '../api/chatApi';
+import { getStudentId } from '../utils/utils';
 
 @Entry
 @Component
 struct Index {
+  private TAG = "[Index]";
   @State message: string = 'Hello World';
   @State botSelect: number = 0
   @State topSelect: number = 1
@@ -21,20 +24,52 @@ struct Index {
   @State showLogIn: boolean = false
   @State logInHeight: string = '0'
   @State login: boolean = true
-  @LocalStorageLink("unread") unreadListLink: Array<MessageModel> = []
+  @StorageLink("unread") unreadListLink: Array<Unread> = []
+
   aboutToAppear(): void {
+    console.log(this.TAG, "aboutToAppear unreadListLink:", JSON.stringify(this.unreadListLink))
     initMessage()
-    // this.unreadListLink = AppStorage.get("unread") as Array<MessageModel>
     initMineSimpleInfo()
-    console.log("index: ", AppStorage.get("unread"))
+    // 获取未读消息列表
+    getAppChatUnreads(getStudentId()).then((res: Array<Unread>)=>{
+      console.log(this.TAG, "获取未读消息列表成功", JSON.stringify(res))
+      AppStorage.set("unread", res)
+    }).catch((err: string)=>{
+      console.log(this.TAG, "获取未读消息列表失败", err)
+    })
   }
+
+  private getTotalUnreadCount(): number {
+    console.log(this.TAG, "getTotalUnreadCount unreadListLink:", JSON.stringify(this.unreadListLink))
+    const total = this.unreadListLink.reduce((total, item) => total + parseInt(item.unreadCount), 0);
+    console.log(this.TAG, "getTotalUnreadCount total:", total)
+    return total;
+  }
+
   @Builder
   TabBotBuilder(item: BotItem, index: number) {
     Column() {
-      Image(this.botSelect === index ? item.icon_selected : item.icon_normal)
-        .width(22)
-        .height(22)
-        .objectFit(ImageFit.Contain)
+      Stack({ alignContent: Alignment.TopEnd }) {
+        Image(this.botSelect === index ? item.icon_selected : item.icon_normal)
+          .width(22)
+          .height(22)
+          .objectFit(ImageFit.Contain)
+        
+        if (index === 2 && this.getTotalUnreadCount() > 0) {
+          Text(this.getTotalUnreadCount().toString())
+            .fontSize(10)
+            .fontColor(Color.White)
+            .backgroundColor(Color.Red)
+            .borderRadius(8)
+            .width(16)
+            .height(16)
+            .textAlign(TextAlign.Center)
+            .margin({ top: -5, right: -5 })
+        }
+      }
+      .width(22)
+      .height(22)
+
       Text(item.text)
         .fontSize(12)
         .fontColor(this.botSelect === index ? $r('app.color.blue_theme_2') : '#000')
