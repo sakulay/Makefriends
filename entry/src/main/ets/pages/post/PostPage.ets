@@ -6,7 +6,7 @@ import { NewsCommentData, NewsCommentModel } from '../../model/NewsCommentModel'
 import { CommentPage } from '../View/CommentPage';
 import { CommonConstants } from '../../common/CommonConstants';
 import { MyScroller } from '../View/Scroller';
-import { PostModel } from '../../api/postApi';
+import { PostModel, PostQuery } from '../../api/postApi';
 import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
 import { AddComment, CommentForm,
   CommentModel,
@@ -16,6 +16,8 @@ import { getStudentId } from '../../utils/utils';
 import { CommentEmptyPage } from '../components/CommentEmptyPage';
 import { Loading } from '../components/Loading';
 import { mockData } from '../../mock/NewsDetailData';
+import { getPostLikePage, savePostLike, deletePostLike, PostLikeQuery, PostLikeForm } from '../../api/postLikeApi'
+import { getRecPostList } from '../../api/postApi';
 
 @Entry
 @Component
@@ -42,6 +44,7 @@ struct PostPage {
   @State topSelect: number = 0
   @State likeStatus: boolean = false
   @State starStatus: boolean = false
+  @State likeCount: number = 0
 
   @State curUser: string = 'yuyu';   // 当前用户
   @State replyUser: string = "";   // 被回复人昵称
@@ -62,7 +65,8 @@ struct PostPage {
    */
   private topController: TabsController = new TabsController()
   @State isWebAtEnd: boolean = true; // web组件是否滚动到底部，ture到Web底部，false还未到底部。
-  aboutToAppear(): void {
+
+  async aboutToAppear() {
     let params = router.getParams() as PostModel
     if(params) {
       this.post = params
@@ -93,6 +97,17 @@ struct PostPage {
       this.loading = false
       console.log(this.LOG, `获取评论列表失败 ${JSON.stringify(err)}`)
     })
+
+    // 检查点赞状态
+    const userId = getStudentId()
+    const query = new PostLikeQuery(1, 1, Number(userId), this.post.id)
+    try {
+      const response = await getPostLikePage(query)
+      this.likeStatus = response.total > 0
+      this.likeCount = this.post.likeCount
+    } catch (error) {
+      console.error(this.LOG, '获取点赞状态失败:', error)
+    }
   }
 
   // 评论输入弹窗
@@ -224,9 +239,6 @@ struct PostPage {
     this.listScroller.scrollToIndex(0, true, ScrollAlign.START);
   }
 
-
-
-
   /**
    * 顶部导航栏
    */
@@ -302,11 +314,27 @@ struct PostPage {
             .width(25)
             .height(25)
             .opacity(this.likeStatus ? 1 : 0.6)
-            .onClick(() => {
-              this.likeStatus = !this.likeStatus
+            .onClick(async () => {
+              const userId = getStudentId()
+              try {
+                if (this.likeStatus) {
+                  // 取消点赞
+                  await deletePostLike(`${userId},${this.post.id}`)
+                  this.likeStatus = false
+                  this.likeCount = Math.max(0, this.likeCount - 1) // 确保不会出现负数
+                } else {
+                  // 点赞
+                  const form = new PostLikeForm(Number(userId), this.post.id)
+                  await savePostLike(form)
+                  this.likeStatus = true
+                  this.likeCount++
+                }
+              } catch (error) {
+                console.error(this.LOG, '点赞操作失败:', error)
+              }
             })
-          Text(this.post.likeCount.toString())
-            .fontColor(this.likeStatus? Color.Black : Color.Gray)
+          Text(this.likeCount.toString())
+            .fontColor(this.likeStatus ? Color.Black : Color.Gray)
         }
         Column() {
           Image($r('app.media.ic_comment'))

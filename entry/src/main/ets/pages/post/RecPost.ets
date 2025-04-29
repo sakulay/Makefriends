@@ -35,10 +35,13 @@ export struct RecPost {
     getRecPostList(queryParam).then((res) => {
       if(res.list.length > 0) {
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
-        this.postList.push(...res.list)
+        // 去重处理
+        const newPosts = res.list.filter(newPost => 
+          !this.postList.some(existingPost => existingPost.id === newPost.id)
+        )
+        this.postList.push(...newPosts)
         this.postList.forEach((item: PostModel) => {
-          console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
-          console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
+          console.log(`文章${item.id}: 点赞数 ${JSON.stringify(item.likeCount)} 评论数 ${JSON.stringify(item.commentCount)}`)
         })
       } else {
         this.isNone = true

@@ -23,16 +23,25 @@ export struct MinePost {
   }
 
   getList() {
+    this.isLoading = true
     const id = getStudentId()
     const queryParam = new PostQuery(this.page, 10, 1, Number(id))
-    //
     getRecPostList(queryParam).then((res) => {
-      console.log('获取推荐帖子成功: ', JSON.stringify(res))
-      this.postList.push(...res.list)
-      this.postList.forEach((item: PostModel) => {
-        console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
-        console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
-      })
+      if(res.list.length > 0) {
+        console.log('获取推荐帖子成功: ', JSON.stringify(res))
+        // 去重处理
+        const newPosts = res.list.filter(newPost => 
+          !this.postList.some(existingPost => existingPost.id === newPost.id)
+        )
+        this.postList.push(...newPosts)
+        this.postList.forEach((item: PostModel) => {
+          console.log(`文章${item.id}的图片列表：`, JSON.stringify(item.imageList))
+          console.log(`文章${item.id}的用户信息：`, JSON.stringify(item.userInfo))
+        })
+      } else {
+        this.isNone = true
+      }
+      this.isLoading = false
     }).catch((err: string) => {
       console.error('获取推荐帖子失败: ', err)
       showBottomError(this.getUIContext(), err)
