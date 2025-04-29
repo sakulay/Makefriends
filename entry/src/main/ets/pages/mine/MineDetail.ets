@@ -138,24 +138,38 @@ struct MineDetail{
   avatar() {
     Row() {
       Text('头像')
-      Image(this.avatarUri)
-        .width(70)
-        .height(70)
-        .borderRadius(25)
-        .onClick(()=>{
+        .fontSize(16)
+        .fontColor('#333')
+      Stack() {
+        Circle()
+          .width(64)
+          .height(64)
+          .stroke('#E0E0E0')
+          .strokeWidth(1)
+        Image(this.avatarUri)
+          .width(60)
+          .height(60)
+          .borderRadius(30)
+          .backgroundColor('#F5F5F5')
+          .onClick(()=>{
             this.example01()
-        })
+          })
+      }
     }
     .width('100%')
-    .height(70)
+    .height(80)
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .padding({ left: 16, right: 16 })
+    .borderRadius({ topLeft: 12, topRight: 12 })
   }
   /** 昵称 */
   @Builder
   nickName(title: string, text: string) {
     Row() {
       Text(title)
+        .fontSize(16)
+        .fontColor('#333')
         .width(50)
       TextInput({text: this.userInfo.nickname? this.userInfo.nickname : '', placeholder: '点击添加'})
         .textAlign(TextAlign.End)
@@ -167,24 +181,29 @@ struct MineDetail{
         })
     }
     .width('100%')
-    .height(50)
+    .height(56)
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .padding({ left: 16, right: 16 })
   }
   /** 学号 */
   @Builder
   stuNum(stuNum: string) {
     Row() {
       Text("学号")
+        .fontSize(16)
+        .fontColor('#333')
         .width(50)
       Text(stuNum)
         .layoutWeight(1)
         .textAlign(TextAlign.End)
+        .fontColor('#999')
     }
     .width('100%')
-    .height(50)
+    .height(56)
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .padding({ left: 16, right: 16 })
   }
 
   /** 性别 */
@@ -192,44 +211,53 @@ struct MineDetail{
   gender() {
     Row() {
       Text("性别")
+        .fontSize(16)
+        .fontColor('#333')
         .width(50)
-      Text(this.userInfo.gender != undefined? (this.userInfo.gender == 0 ? '男' : '女') : '无')
-        .layoutWeight(1)
-        .textAlign(TextAlign.End)
-        .onClick(()=>{
-          this.getUIContext().showTextPickerDialog({
-            range: ['男', '女'],
-            onAccept: (value: TextPickerResult) => {
-              console.info('accept:' + value.index)
-              if (value.index === 0) {
-                this.userInfo.gender = 0
-              } else {
-                this.userInfo.gender = 1
-              }
-              console.info('accept:' + this.userInfo.gender)
-            },
-            onCancel: () => {
-              console.info('cancel')
+      Row() {
+        Text(this.userInfo.gender != undefined? (this.userInfo.gender == 0 ? '男' : '女') : '无')
+          .fontColor('#999')
+        Image($r('app.media.ic_right_arrow'))
+          .width(16)
+          .height(16)
+          .opacity(0.4)
+          .margin({ left: 4 })
+      }
+      .onClick(()=>{
+        this.getUIContext().showTextPickerDialog({
+          range: ['男', '女'],
+          onAccept: (value: TextPickerResult) => {
+            if (value.index === 0) {
+              this.userInfo.gender = 0
+            } else {
+              this.userInfo.gender = 1
             }
-          })
+          },
+          onCancel: () => {
+            console.info('cancel')
+          }
         })
+      })
     }
     .width('100%')
-    .height(50)
+    .height(56)
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .padding({ left: 16, right: 16 })
   }
 
   /** 个人简介 */
   @Builder
   bio() {
     Row() {
-      Text("个性签名：")
-        .width(67)
+      Text("个性签名")
+        .fontSize(16)
+        .fontColor('#333')
+        .width(50)
       TextArea({text: this.userInfo.bio? this.userInfo.bio : '', placeholder: '点击添加'})
         .layoutWeight(1)
         .textAlign(TextAlign.End)
-        .padding(0)
+        .padding(0) 
         .maxLength(16)
         .showCounter(true,{
           thresholdPercentage: 80,
@@ -242,9 +270,11 @@ struct MineDetail{
         .backgroundColor(Color.White)
     }
     .width('100%')
-    .height(50)
+    .height(56)
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .padding({ left: 16, right: 16 })
+    .borderRadius({ bottomLeft: 12, bottomRight: 12 })
   }
 
   /** 保存图片至相册 */
@@ -285,7 +315,7 @@ struct MineDetail{
 
   build() {
     Column() {
-      // 顶部
+      // 顶部导航栏
       Row() {
         Image($r('app.media.ic_left_arrow'))
           .width(24)
@@ -294,9 +324,13 @@ struct MineDetail{
             router.back(Number(router.getLength())-1, {reflash: 1})
           })
         Text("个人信息")
-          .fontSize(25)
-        Text("保存")
           .fontSize(20)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#333')
+        Text("保存")
+          .margin({top: 5})
+          .fontSize(18)
+          .fontColor('#FF6B6B')
           .onClick(async () => {
             try{
               // 如果头像是file://开头，则上传图片
@@ -332,37 +366,188 @@ struct MineDetail{
               console.error(err)
               showBottomToast(this.getUIContext(), err)
             }
-
           })
       }
       .width('100%')
+      .height(56)
       .justifyContent(FlexAlign.SpaceBetween)
       .backgroundColor(Color.White)
-      .padding(5)
+      .padding({ left: 16, right: 16 })
 
-      // 主体
-      Column() {
-        Column({space: 5}) {
-          this.avatar()
-          this.nickName('昵称', this.userInfo.nickname)
-          this.stuNum(this.studentId)
-          this.gender()
-          this.bio()
-          // this.savePic()
-          // this.uploadPic1()
+      // 主体内容
+      Scroll() {
+        Column() {
+          // 头像
+          Row() {
+            Text('头像')
+              .fontSize(16)
+              .fontColor('#333')
+            Stack() {
+              Circle()
+                .width(64)
+                .height(64)
+                .stroke('#E0E0E0')
+                .strokeWidth(1)
+              Image(this.avatarUri)
+                .width(60)
+                .height(60)
+                .borderRadius(30)
+                .backgroundColor('#F5F5F5')
+                .onClick(()=>{
+                  this.example01()
+                })
+                .transition({ type: TransitionType.Insert, scale: { x: 0.8, y: 0.8 } })
+                .animation({
+                  duration: 300,
+                  curve: Curve.EaseOut
+                })
+            }
+          }
+          .width('100%')
+          .height(80)
+          .justifyContent(FlexAlign.SpaceBetween)
+          .backgroundColor(Color.White)
+          .padding({ left: 16, right: 16 })
+          .borderRadius({ topLeft: 12, topRight: 12 })
+          .margin({ top: 12 })
+          .animation({
+            duration: 300,
+            curve: Curve.EaseOut,
+            delay: 50
+          })
+
+          // 昵称
+          Row() {
+            Text('昵称')
+              .fontSize(16)
+              .fontColor('#333')
+              .width(50)
+            TextInput({text: this.userInfo.nickname? this.userInfo.nickname : '', placeholder: '点击添加'})
+              .textAlign(TextAlign.End)
+              .layoutWeight(1)
+              .backgroundColor(Color.White)
+              .padding(0)
+              .onChange((value: string) => {
+                this.userInfo.nickname = value;
+              })
+          }
+          .width('100%')
+          .height(56)
+          .justifyContent(FlexAlign.SpaceBetween)
+          .backgroundColor(Color.White)
+          .padding({ left: 16, right: 16 })
+          .animation({
+            duration: 300,
+            curve: Curve.EaseOut,
+            delay: 100
+          })
+
+          // 学号
+          Row() {
+            Text("学号")
+              .fontSize(16)
+              .fontColor('#333')
+              .width(50)
+            Text(this.studentId)
+              .layoutWeight(1)
+              .textAlign(TextAlign.End)
+              .fontColor('#999')
+          }
+          .width('100%')
+          .height(56)
+          .justifyContent(FlexAlign.SpaceBetween)
+          .backgroundColor(Color.White)
+          .padding({ left: 16, right: 16 })
+          .animation({
+            duration: 300,
+            curve: Curve.EaseOut,
+            delay: 150
+          })
+
+          // 性别
+          Row() {
+            Text("性别")
+              .fontSize(16)
+              .fontColor('#333')
+              .width(50)
+            Row() {
+              Text(this.userInfo.gender != undefined? (this.userInfo.gender == 0 ? '男' : '女') : '无')
+                .fontColor('#999')
+              Image($r('app.media.ic_right_arrow'))
+                .width(16)
+                .height(16)
+                .opacity(0.4)
+                .margin({ left: 4 })
+            }
+            .onClick(()=>{
+              this.getUIContext().showTextPickerDialog({
+                range: ['男', '女'],
+                onAccept: (value: TextPickerResult) => {
+                  if (value.index === 0) {
+                    this.userInfo.gender = 0
+                  } else {
+                    this.userInfo.gender = 1
+                  }
+                },
+                onCancel: () => {
+                  console.info('cancel')
+                }
+              })
+            })
+          }
+          .width('100%')
+          .height(56)
+          .justifyContent(FlexAlign.SpaceBetween)
+          .backgroundColor(Color.White)
+          .padding({ left: 16, right: 16 })
+          .animation({
+            duration: 300,
+            curve: Curve.EaseOut,
+            delay: 200
+          })
+
+          // 个性签名
+          Row() {
+            Text("个性签名")
+              .fontSize(16)
+              .fontColor('#333')
+              .width(50)
+            TextArea({text: this.userInfo.bio? this.userInfo.bio : '', placeholder: '点击添加'})
+              .layoutWeight(1)
+              .textAlign(TextAlign.End)
+              .padding(0)
+              .maxLength(16)
+              .showCounter(true,{
+                thresholdPercentage: 80,
+                highlightBorder: false
+              })
+              .onChange((value: string) => {
+                this.userInfo.bio = value;
+              })
+              .borderRadius(0)
+              .backgroundColor(Color.White)
+          }
+          .width('100%')
+          .height(56)
+          .justifyContent(FlexAlign.SpaceBetween)
+          .backgroundColor(Color.White)
+          .padding({ left: 16, right: 16 })
+          .borderRadius({ bottomLeft: 12, bottomRight: 12 })
+          .animation({
+            duration: 300,
+            curve: Curve.EaseOut,
+            delay: 250
+          })
         }
         .width('100%')
-        .backgroundColor(Color.White)
-        .borderRadius(10)
-        .padding(10)
       }
       .width('100%')
-      .height('100%')
-      .padding({left: 10, right: 10})
-      .margin({top: 15})
-
+      // .layoutWeight(1)
+      .scrollBar(BarState.Off)
     }
-    .backgroundColor('#f1f1f1')
-
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Start)
+    .backgroundColor('#F8F8F8')
   }
 }
