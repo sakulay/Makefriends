@@ -1,9 +1,7 @@
-import { router } from "@kit.ArkUI"
-import { it } from "@ohos/hypium"
-import { UserSimpleInfo } from "../../viewmodel/UserProfileModel"
-import { getFriendsList } from "../../api/friendsApi"
-import { PersonalInfo } from "../../utils/Mock"
-import { getStudentId } from "../../utils/utils"
+import router from '@ohos.router'
+import { getFriendsList } from '../../api/friendsApi'
+import { getStudentId } from '../../utils/utils'
+import { UserSimpleInfo } from '../../viewmodel/UserProfileModel'
 
 
 @Entry
@@ -16,6 +14,14 @@ export struct Friends {
   @State searchText: string = ''
   @State isSearching: boolean = false
   @State filteredFriends: Array<UserSimpleInfo> = []
+  @State isSearchActive: boolean = false  // 控制搜索状态
+  // 创建一个引用，用来控制 TextInput
+  controller: TextInputController = new TextInputController()
+  //焦点控制的key
+  private focusKey: string = "oneKey";
+  @State searchWidth: number = 0.8  // 控制搜索框宽度比例
+  @State searchPosition: number = 0.5  // 控制搜索框位置，0.5表示居中，0表示靠左
+
 
   async aboutToAppear(): Promise<void> {
     this.onPageShow()
@@ -24,7 +30,6 @@ export struct Friends {
   onPageShow() {
     console.log(`${this.LOG} 页面展示`)
     const studentId = getStudentId();
-    // const studentId = "14"
     getFriendsList(studentId).then(res=>{
       console.log(this.LOG, '获取好友列表成功: ', JSON.stringify(res))
       this.friends = res.list
@@ -46,6 +51,68 @@ export struct Friends {
       friend.bio?.toLowerCase().includes(text.toLowerCase())
     )
   }
+
+@Builder
+SearchBar() {
+  Stack() {
+    Row() {
+      Row() {
+        Image($r('app.media.ic_search'))
+          .width(20)
+          .height(20)
+          .opacity(0.4)
+        TextInput({
+          placeholder: this.isSearchActive ? '' : '搜索好友',
+          controller: this.controller
+        })
+          .width('100%')
+          .height(40)
+          .backgroundColor('transparent')
+          .fontSize(14)
+          .fontColor('#333')
+          .placeholderColor('#999')
+          .enableKeyboardOnFocus(true)
+          .key(this.focusKey)
+          .onFocus(() => {
+            this.isSearchActive = true
+          })
+          .onBlur(() => {
+            if (!this.searchText) {
+              this.isSearchActive = false
+            }
+          })
+          .onChange((value: string) => {
+            this.searchFriends(value)
+          })
+      }
+      .width('100%')
+      .height(40)
+      .justifyContent(FlexAlign.Start)
+      .alignItems(VerticalAlign.Center)
+      .position({ x: this.isSearchActive ? 0 : '40%' })
+      .animation({
+        duration: 300,
+        curve: Curve.EaseOut
+      })
+    }
+    .width('100%')
+    .height(40)
+    .backgroundColor('#F5F5F5')
+    .borderRadius(20)
+    .padding({ left: 0, right: 16 })
+    .margin({ top: 12, bottom: 12 })
+  }
+  .width('100%')
+  .height(64)
+  .onClick(() => {
+    if (!this.isSearchActive) {
+      this.controller.getCaretOffset()
+      console.log(this.LOG, "statck")
+      focusControl.requestFocus(this.focusKey)
+      this.isSearchActive = true
+    }
+  })
+}
 
   @Builder
   friendsList() {
@@ -130,30 +197,12 @@ export struct Friends {
       // 主体内容
       Scroll() {
         Column() {
-          // 搜索栏
+          // 搜索栏容器
           Row() {
-            Image($r('app.media.ic_search'))
-              .width(20)
-              .height(20)
-              .opacity(0.4)
-            TextInput({ placeholder: '搜索好友' })
-              .width('100%')
-              .height(40)
-              .backgroundColor('transparent')
-              .fontSize(14)
-              .fontColor('#333')
-              .placeholderColor('#999')
-              .onChange((value: string) => {
-                this.searchFriends(value)
-              })
+            this.SearchBar()
           }
           .width('100%')
-          .height(40)
-          .backgroundColor('#F5F5F5')
-          .borderRadius(20)
-          .justifyContent(FlexAlign.Start)
-          .padding({ left: 16, right: 16 })
-          .margin({ top: 12, bottom: 12 })
+          .justifyContent(FlexAlign.Center)
 
           // 搜索结果提示
           if (this.searchText && this.filteredFriends.length === 0) {
@@ -182,6 +231,12 @@ export struct Friends {
     .width('100%')
     .height('100%')
     .backgroundColor('#F8F8F8')
+    .onClick(() => {
+      if (this.isSearchActive && !this.searchText) {
+        this.controller.stopEditing()
+        this.isSearchActive = false
+      }
+    })
     .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean, currentRatio: number) => {
       if (isVisible && currentRatio == 1.0) {
         this.onPageShow()
