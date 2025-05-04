@@ -5,7 +5,7 @@ import { UserSimpleInfo } from "../../viewmodel/UserProfileModel"
 
 @Component
 export struct PostCard {
-  @State item: PostModel = new PostModel(
+  @Prop item: PostModel = new PostModel(
     3,
     14,
     '标题3',

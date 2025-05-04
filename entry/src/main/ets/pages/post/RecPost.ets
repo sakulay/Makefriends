@@ -1,4 +1,4 @@
-import { Post, PostList } from '../../utils/Mock'
+import { Post } from '../../utils/Mock'
 import { router } from '@kit.ArkUI'
 import { PostCard } from '../components/PostCard'
 import { getRecPostList, PostModel, PostQuery } from '../../api/postApi'
@@ -7,6 +7,13 @@ import { showBottomError, showBottomToast } from '../../utils/toast'
 import { Loading } from '../components/Loading'
 import { CustomDialogExample } from '../View/DialogBottom'
 import { ReportForm } from '../../api/reportApi'
+import { PostList } from "../../utils/Mock"
+
+export interface PostParams {
+  postId: number
+  likeCount: number
+  commentCount: number
+}
 
 @Entry
 @Component
@@ -25,23 +32,77 @@ export struct RecPost {
   @State page: number = 1
   @State isLoading: boolean = false
   @State reportForm: ReportForm = new ReportForm(1, "", "");
-  onPageShow() {
-    this.getList()
+  @State params: PostParams = {
+    postId: 0,
+    likeCount: 0,
+    commentCount: 0
   }
 
+  aboutToAppear() {
+  }
+  onPageShow() {
+    console.log(`${this.LOG} aboutToAppear`)
+    const params = router.getParams() as PostParams
+    if (params) {
+      this.params = params
+      this.updatePostData()
+    }
+    // this.postList.push(JSON.parse(this.mock))
+    this.getList()
+  }
+  
+  updatePostData() {
+    const postId = this.params.postId
+    const likeCount = this.params.likeCount
+    const commentCount = this.params.commentCount
+    
+    if (postId) {
+      const index = this.postList.findIndex(post => post.id === postId)
+      if (index !== -1) {
+        console.log(`${this.LOG} 更新前的帖子数据`, JSON.stringify(this.postList[index]))
+        // 创建全新的数组
+        const newPostList = this.postList.slice()
+        const oldPost = this.postList[index]
+        const newPost = new PostModel(
+          oldPost.id,
+          oldPost.userId,
+          oldPost.title,
+          oldPost.content,
+          oldPost.imageList,
+          likeCount,
+          commentCount,
+          oldPost.createTime,
+          oldPost.userInfo
+        )
+        newPostList[index] = newPost
+        this.postList = newPostList
+        console.log(`${this.LOG} 更新后的帖子数据`, JSON.stringify(this.postList[index]))
+        console.log(`${this.LOG} 整个数组长度`, this.postList.length)
+      }
+    }
+  }
   getList() {
     this.isLoading = true
     const queryParam = new PostQuery(this.page, 10, 1)
     getRecPostList(queryParam).then((res) => {
       if(res.list.length > 0) {
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
-        // 去重处理
-        const newPosts = res.list.filter(newPost => 
-          !this.postList.some(existingPost => existingPost.id === newPost.id)
-        )
-        this.postList.push(...newPosts)
+        // 更新现有帖子的数据
+        res.list.forEach(newPost => {
+          const existingPostIndex = this.postList.findIndex(post => post.id === newPost.id)
+          if (existingPostIndex !== -1) {
+            // 更新现有帖子的数据
+            const existingPost = this.postList[existingPostIndex]
+            existingPost.likeCount = newPost.likeCount
+            existingPost.commentCount = newPost.commentCount
+          } else {
+            // 添加新帖子
+            this.postList.push(newPost)
+          }
+        })
+        
         this.postList.forEach((item: PostModel) => {
-          console.log(`文章${item.id}: 点赞数 ${JSON.stringify(item.likeCount)} 评论数 ${JSON.stringify(item.commentCount)}`)
+          // console.log(`文章${item.id}: 点赞数 ${JSON.stringify(item.likeCount)} 评论数 ${JSON.stringify(item.commentCount)}`)
         })
       } else {
         this.isNone = true
@@ -55,7 +116,28 @@ export struct RecPost {
   @Builder
   MyPostList() {
     ForEach(this.postList, (item: PostModel, index: number)=>{
-      PostCard({item: item})
+      // Button().width('50%').height(50).onClick(()=>{
+      //   let updatedList = [...this.postList]
+      //   let old = updatedList[index]
+      //
+      //   let newItem = new PostModel(
+      //     old.id,
+      //     old.userId,
+      //     "test", // 修改项
+      //     old.content,
+      //     old.imageList,
+      //     old.likeCount,
+      //     old.commentCount,
+      //     old.createTime,
+      //     old.userInfo
+      //   )
+      //   updatedList[index] = newItem
+      //   this.postList = updatedList
+      //
+      //   console.log(this.LOG, "click")
+      // })
+      // Text(this.postList[index].title)
+      PostCard({item: this.postList[index]})
         .gesture(LongPressGesture(
           {repeat: false}).onAction(() => {
           this.reportForm.complaintTargetId = item.id.toString()
@@ -63,7 +145,7 @@ export struct RecPost {
           this.dialogControllerBottom?.open()
         })
         )
-    }, (item: Post) => item.id.toString())
+    }, (item: PostModel) => item.id.toString())
   }
 
   dialogControllerBottom: CustomDialogController | null = new CustomDialogController({
@@ -80,6 +162,7 @@ export struct RecPost {
     customStyle: false,
     cornerRadius: 10,
   })
+
 
   build() {
     Stack() {

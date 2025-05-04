@@ -17,7 +17,6 @@ import { CommentEmptyPage } from '../components/CommentEmptyPage';
 import { Loading } from '../components/Loading';
 import { mockData } from '../../mock/NewsDetailData';
 import { getPostLikePage, savePostLike, deletePostLike, PostLikeQuery, PostLikeForm } from '../../api/postLikeApi'
-import { getRecPostList } from '../../api/postApi';
 
 @Entry
 @Component
@@ -279,7 +278,13 @@ struct PostPage {
         .margin({ left: 10 })
         .onClick(()=>{
           console.log("返回")
-          router.back()
+          console.log('[PostPage] 返回前 router.getLength():', router.getLength())
+          let length : number = Number(router.getLength())
+          router.back(length - 1, {
+            postId: this.post.id,
+            likeCount: this.likeCount,
+            commentCount: this.post.commentCount
+          })
         })
     }
 
@@ -319,11 +324,13 @@ struct PostPage {
               try {
                 if (this.likeStatus) {
                   // 取消点赞
-                  await deletePostLike(`${userId},${this.post.id}`)
+                  console.log(this.LOG, `取消点赞: postId=${this.post.id}`)
+                  await deletePostLike(userId, this.post.id.toString())
                   this.likeStatus = false
-                  this.likeCount = Math.max(0, this.likeCount - 1) // 确保不会出现负数
+                  this.likeCount = Math.max(0, this.likeCount - 1)
                 } else {
                   // 点赞
+                  console.log(this.LOG, `点赞: postId=${this.post.id}`)
                   const form = new PostLikeForm(Number(userId), this.post.id)
                   await savePostLike(form)
                   this.likeStatus = true

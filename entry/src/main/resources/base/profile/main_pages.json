@@ -8,7 +8,6 @@
     "pages/friends/AddFriends",
     "pages/post/Post",
     "pages/post/RecPost",
-    "pages/post/PostPage",
     "pages/chat/ChatPage",
     "pages/post/AddPost",
     "pages/Login",
@@ -20,6 +19,8 @@
     "pages/News/News",
     "pages/News/NewsItem",
     "pages/search/SearchPage",
-    "pages/search/SearchResult"
+    "pages/search/SearchResult",
+    "pages/mine/BrowseRecord",
+    "pages/post/PostPage"
   ]
 }

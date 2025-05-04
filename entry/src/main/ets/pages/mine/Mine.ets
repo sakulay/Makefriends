@@ -32,11 +32,11 @@ export struct Mine {
             .width(48)
             .height(48)
             .fill('#F5F5F5')
-          Image($r('app.media.ic_favorite'))
+          Image($r('app.media.ic_post_bold'))
             .height(24)
             .width(24)
         }
-        Text('我的动态')
+        Text('我的帖子')
           .fontSize(13)
           .fontColor('#666')
           .margin({ top: 4 })
@@ -51,17 +51,19 @@ export struct Mine {
             .width(48)
             .height(48)
             .fill('#F5F5F5')
-          Image($r('app.media.ic_favorite'))
+          Image($r('app.media.ic_history_black'))
             .height(24)
             .width(24)
         }
-        Text('我的评论')
+        Text('浏览记录')
           .fontSize(13)
           .fontColor('#666')
           .margin({ top: 4 })
       }
       .onClick(() => {
-        // 点击处理
+        router.pushUrl({
+          url: 'pages/mine/BrowseRecord'
+        });
       })
 
       Column() {
@@ -70,7 +72,7 @@ export struct Mine {
             .width(48)
             .height(48)
             .fill('#F5F5F5')
-          Image($r('app.media.ic_favorite'))
+          Image($r('app.media.news_star'))
             .height(24)
             .width(24)
         }
@@ -89,11 +91,12 @@ export struct Mine {
             .width(48)
             .height(48)
             .fill('#F5F5F5')
-          Image($r('app.media.ic_favorite'))
+          Image($r('app.media.ic_report_bold'))
             .height(24)
             .width(24)
+            .opacity(0.7)
         }
-        Text('稍后再看')
+        Text('我的举报')
           .fontSize(13)
           .fontColor('#666')
           .margin({ top: 4 })

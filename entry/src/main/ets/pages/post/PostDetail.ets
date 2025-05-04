@@ -2,6 +2,8 @@ import { mockInfo, PersonalInfo, Post, PostList} from '../../utils/Mock'
 import { router } from '@kit.ArkUI'
 import { PostImage, PostModel } from '../../api/postApi'
 import { UserSimpleInfo } from '../../viewmodel/UserProfileModel'
+import { saveBrowseRecord } from '../../api/browseRecordApi'
+import { getStudentId } from '../../utils/utils'
 
 @Component
 export struct PostDetail {
@@ -9,14 +11,28 @@ export struct PostDetail {
   @State info: UserSimpleInfo = new UserSimpleInfo('', '', '', '')
   @Prop post: PostModel
   @State swiper_index: number = 1
-  aboutToAppear(): void {
+  @State postId: string = ''
+
+  async aboutToAppear() {
     if(this.post) {
       console.log("[PostDetail] 文章详细内容：",JSON.stringify(this.post))
       this.imgs = this.post.imageList
     }
     this.imgs = this.post.imageList
     this.info = this.post.userInfo
+    this.postId = this.post.id.toString()
+
+    // 保存浏览记录
+    try {
+      await saveBrowseRecord({
+        postId: this.postId,
+        viewerId: getStudentId()
+      })
+    } catch (error) {
+      console.error('保存浏览记录失败:', error)
+    }
   }
+
   @Builder MySwiper() {
     Stack({alignContent: Alignment.BottomEnd}){
       Swiper(){

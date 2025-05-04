@@ -58,8 +58,8 @@ export function savePostLike(form: PostLikeForm) {
 /**
  * 删除点赞记录
  */
-export function deletePostLike(ids: string) {
+export function deletePostLike(userId: string, postId: string) {
   return Delete<null, null>(
-    `${POST_LIKE_BASE_URL}/${ids}`
-  )
-} 
+    `${POST_LIKE_BASE_URL}?userId=${userId}&postId=${postId}`
+  );
+}
