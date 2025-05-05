@@ -1,7 +1,7 @@
 import { UserSimpleInfo } from '../../../viewmodel/UserProfileModel'
 import { router } from '@kit.ArkUI'
 import { showBottomError, showTopToast } from '../../../utils/toast'
-import { addFriendRequest, FriendRequestForm } from '../../../api/friendsApi'
+import { addFriendRequest, FriendRequestForm, passFriendRequest } from '../../../api/friendsApi'
 
 @Component
 export struct FriendItem {
@@ -32,67 +32,72 @@ export struct FriendItem {
   handleClick() {
     if(this.info) {
       if(this.info.status == 0) {
-        showTopToast(this.getUIContext(), '同意')
+        this.info.status = 1
+        passFriendRequest(this.info.requestId as string).then(() => {
+          this.info.status = 1
+          showTopToast(this.getUIContext(), '已通过好友申请')
+        }).catch((error: string) => {
+          showBottomError(this.getUIContext(), error)
+        })
       }
     }
   }
-
 
   build() {
     Column(){
       if(this.info) {
         Row(){
-          // 头像展示
-          Column() {
-            Image(this.info.avatar)
-              .width(70)
-              .height(70)
-              .borderRadius(25)
-          }
-          // 昵称、学号
+          Image(this.info.avatar)
+            .width(64)
+            .height(64)
+            .borderRadius(32)
+            .border({ width: 1, color: '#E8E8E8' })
+            .shadow({ radius: 4, color: '#0000000A', offsetX: 0, offsetY: 2 })
+          
           Column() {
             Text(this.info.nickname)
-              .fontSize(25)
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
+              .fontColor('#333333')
             Text(this.info.studentId.toString())
+              .fontSize(14)
+              .fontColor('#666666')
+              .margin({top: 4})
           }
           .layoutWeight(1)
-          .height(60)
+          .height(64)
           .justifyContent(FlexAlign.SpaceBetween)
           .alignItems(HorizontalAlign.Start)
-          .margin({top: 7, left: 10})
-          // .backgroundColor(Color.Green)
-          // 右侧按钮部分
+          .margin({left: 12})
+
           Column() {
             Row() {
               Text(this.computedText(this.info.status as number))
                 .fontColor(this.computedColor(this.info.status as number))
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
                 .onClick(()=>{
                   this.handleClick()
                 })
             }
-            .width(60)
-            .height(30)
-            // .margin({top: 15})
+            .width(70)
+            .height(32)
             .justifyContent(FlexAlign.Center)
-            // .backgroundColor('#f1f1f1')
-            .borderRadius(6)
-            .border({width: 1, color: Color.Gray})
+            .backgroundColor('#F5F5F5')
+            .borderRadius(16)
+            .border({width: 1, color: '#E8E8E8'})
           }
-          .height(80)
-          // .backgroundColor(Color.Brown)
+          .height(64)
           .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.End)
         }
-        .width('93%')
-        .height(110)
-        .padding(15)
-        .margin({top: 10})
+        .width('100%')
+        .height(96)
+        .padding({left: 16, right: 16, top: 16, bottom: 16})
         .backgroundColor(Color.White)
-        .alignItems(VerticalAlign.Top)
-        .justifyContent(FlexAlign.SpaceBetween)
-        .borderRadius(10)
+        .margin({top: 1})
         .onClick(()=>{
           let info = this.info
-          // 如果是待处理，更改状态为4，以便动态展示infocard底部栏
           if(info.status == 0) {
             info.status = 4
           }
@@ -103,8 +108,6 @@ export struct FriendItem {
         })
       }
     }
-    // .height('100%')
     .width('100%')
-
   }
 }

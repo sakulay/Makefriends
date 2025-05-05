@@ -31,20 +31,23 @@ struct FriendRequest {
   TopBar() {
     Row({space: 10}) {
       Image($r('app.media.ic_left_arrow'))
-        .width(25)
-        .height(25)
+        .width(24)
+        .height(24)
         .onClick(()=>{
           router.back()
         })
       Text('申请列表')
-        .fontSize(23)
-        .fontColor(Color.Black)
+        .fontSize(20)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#333333')
       Row().width('10%')
     }
     .width('100%')
-    .padding(10)
+    .height(56)
+    .padding({left: 16, right: 16})
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(Color.White)
+    .shadow({ radius: 8, color: '#0000000A', offsetX: 0, offsetY: 2 })
   }
 
   @Builder
@@ -64,6 +67,6 @@ struct FriendRequest {
     }
     .height('100%')
     .width('100%')
-    .backgroundColor('#f1f1f1')
+    .backgroundColor('#F5F5F5')
   }
 }

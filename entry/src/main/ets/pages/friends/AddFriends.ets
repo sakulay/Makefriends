@@ -90,20 +90,26 @@ struct AddFriends {
   TopBar() {
     Row({space: 10}) {
       Image($r('app.media.ic_left_arrow'))
-        .width(25)
-        .height(25)
+        .width(24)
+        .height(24)
         .onClick(()=>{
           router.back()
         })
-      TextInput({text: this.friendId, placeholder: '学号'})
+      TextInput({text: this.friendId, placeholder: '请输入学号'})
         .onChange((value: string) => {
           this.friendId = value;
         })
         .layoutWeight(1)
+        .height(40)
+        .backgroundColor('#F5F5F5')
+        .borderRadius(20)
+        .padding({left: 16, right: 16})
+        .fontSize(16)
       Text("搜索")
-        .fontColor(Color.Blue)
+        .fontColor('#007AFF')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
         .onClick(() => {
-          // 检查输入学号是否合法
           if(this.checkIfNumber(this.friendId)) {
             searchFriend(this.studentId, this.friendId).then((res: UserSimpleInfo)=>{
               this.info = res
@@ -116,79 +122,85 @@ struct AddFriends {
         })
     }
     .width('100%')
-    .padding(10)
+    .padding({left: 16, right: 16, top: 12, bottom: 12})
     .backgroundColor(Color.White)
+    .shadow({ radius: 8, color: '#0000000A', offsetX: 0, offsetY: 2 })
   }
 
   @Builder
   NoMore() {
     Row() {
       Text("没有更多了")
-        .fontColor('#ff8a8a8a')
+        .fontColor('#999999')
+        .fontSize(14)
     }
     .height(60)
+    .width('100%')
+    .justifyContent(FlexAlign.Center)
   }
 
   @Builder
   SearchItem() {
     if(this.info) {
       Row(){
-        // 头像展示
-        Column() {
-          Image(this.info.avatar)
-            .width(70)
-            .height(70)
-            .borderRadius(25)
-        }
-        // 昵称、学号
+        Image(this.info.avatar)
+          .width(64)
+          .height(64)
+          .borderRadius(32)
+          .border({ width: 1, color: '#E8E8E8' })
+          .shadow({ radius: 4, color: '#0000000A', offsetX: 0, offsetY: 2 })
+        
         Column() {
           Text(this.info.nickname)
-            .fontSize(25)
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#333333')
           Text(this.info.studentId.toString())
+            .fontSize(14)
+            .fontColor('#666666')
+            .margin({top: 4})
         }
         .layoutWeight(1)
-        .height(60)
+        .height(64)
         .justifyContent(FlexAlign.SpaceBetween)
         .alignItems(HorizontalAlign.Start)
-        .margin({top: 7, left: 10})
-        // .backgroundColor(Color.Green)
-        // 右侧
+        .margin({left: 12})
+
         Column() {
           Image($r('app.media.ic_right_arrow'))
-            .width(20)
-            .height(15)
-          // .margin({bottom: 5})
-          // 如果查询对象是自己，则不显示按钮
+            .width(16)
+            .height(16)
+            .opacity(0.5)
+          
           if(this.info.studentId != this.studentId) {
             Row() {
               Text(this.computedText(this.info.status as number))
                 .fontColor(this.computedColor(this.info.status as number))
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
                 .onClick(()=>{
                   this.handleClick()
                 })
             }
-            .width(60)
-            .height(30)
-            .margin({top: 15})
+            .width(70)
+            .height(32)
+            .margin({top: 12})
             .justifyContent(FlexAlign.Center)
-            .backgroundColor('#f1f1f1')
-            .border({width: 1, color: Color.Gray})
+            .backgroundColor('#F5F5F5')
+            .borderRadius(16)
+            .border({width: 1, color: '#E8E8E8'})
           }
         }
-        .height(80)
-        // .backgroundColor(Color.Brown)
-        .justifyContent(FlexAlign.Center)
+        .height(64)
+        .justifyContent(FlexAlign.SpaceBetween)
+        .alignItems(HorizontalAlign.End)
       }
-      .width('93%')
-      .height(110)
-      .padding(15)
-      .margin({top: 15})
+      .width('100%')
+      .height(96)
+      .padding({left: 16, right: 16, top: 16, bottom: 16})
       .backgroundColor(Color.White)
-      .alignItems(VerticalAlign.Top)
-      .justifyContent(FlexAlign.SpaceBetween)
-      .borderRadius(10)
+      .margin({top: 1})
       .onClick(()=>{
-        // this.info.status = this.status
         router.pushUrl({
           url: 'pages/friends/InfoCard',
           params: this.info
@@ -196,6 +208,7 @@ struct AddFriends {
       })
     }
   }
+
   build() {
     Column() {
       this.TopBar()
@@ -204,6 +217,6 @@ struct AddFriends {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f1f1f1')
+    .backgroundColor('#F5F5F5')
   }
 }
