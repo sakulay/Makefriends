@@ -59,7 +59,7 @@ export struct PostDetail {
 
   build() {
     Column() {
-      if(PostList[0].imgList) {
+      if(this.imgs.length != 0) {
         this.MySwiper()
       }
       Column({space: 10}) {

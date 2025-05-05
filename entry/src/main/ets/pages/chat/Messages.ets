@@ -29,42 +29,45 @@ export struct Messages {
     ForEach(this.unreadListLink, (item: Unread)=>{
       Row() {
         Image(item.avatar)
-          .width(50)
-          .height(50)
-          .borderRadius(25)
-          .border({ width: 1, color: Color.Gray })
+          .width(56)
+          .height(56)
+          .borderRadius(28)
+          .border({ width: 1, color: '#E8E8E8' })
+          .shadow({ radius: 4, color: '#0000000A', offsetX: 0, offsetY: 2 })
         Column() {
           Text(item.nickname)
-            .fontSize(16)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(17)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#333333')
+            .margin({ bottom: 4 })
 
           Row() {
             Text(undefined) {
               ForEach(this.processContent(item.latestContent), (spanItem: SpanItem) => {
                 if (spanItem.spanType === SpanType.IMAGE) {
                   ImageSpan($rawfile(spanItem.imgSrc))
-                    .width(20)
-                    .height(20)
+                    .width(22)
+                    .height(22)
                     .verticalAlign(ImageSpanAlignment.BOTTOM)
-                    .margin({ right: 2 })
+                    .margin({ right: 4 })
                 } else if (spanItem.spanType === SpanType.TEXT) {
                   Span(spanItem.text)
                 }
               })
             }
-            .fontSize(14)
+            .fontSize(15)
             .fontColor('#666666')
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
           }
           .width('100%')
           .constraintSize({
-            minHeight: 20,
+            minHeight: 22,
             maxWidth: '100%'
           })
         }
-        .margin({ left: 10 })
-        .height(45)
+        .margin({ left: 12 })
+        .height(56)
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
         .justifyContent(FlexAlign.SpaceBetween)
@@ -72,20 +75,22 @@ export struct Messages {
         if(item.unreadCount != '0') {
           Column() {
             Text(item.unreadCount)
-              .fontSize(12)
+              .fontSize(13)
               .fontColor(Color.White)
+              .fontWeight(FontWeight.Medium)
           }
-          .width(19)
-          .height(19)
-          .borderRadius(9)
+          .width(22)
+          .height(22)
+          .borderRadius(11)
           .justifyContent(FlexAlign.Center)
-          .backgroundColor(Color.Red)
+          .backgroundColor('#FF3B30')
+          .shadow({ radius: 4, color: '#FF3B3033', offsetX: 0, offsetY: 2 })
         }
       }
       .width('100%')
-      .padding({left: 10, right: 10, top: 10, bottom: 5})
+      .padding({left: 16, right: 16, top: 12, bottom: 12})
       .backgroundColor(Color.White)
-      .margin({top: 2, bottom: 12})
+      .margin({top: 1, bottom: 1})
       .onClick(()=>{
         AppStorage.set("selectedChat", item.sender)
         router.pushUrl({url: 'pages/chat/ChatPage'})
@@ -107,37 +112,37 @@ export struct Messages {
         }
         .layoutWeight(1)
         .width('100%')
-        .padding({left: 10, right: 10})
+        .padding({left: 0, right: 0})
         .justifyContent(FlexAlign.Start)
-        // .backgroundColor('#f1f1f1')
+        .backgroundColor('#F5F5F5')
       }
       .layoutWeight(1)
       .scrollBarWidth(0)
-      .margin({top: 50})
+      .margin({top: 56})
 
-      // 顶部
+      // 顶部导航栏
       Row() {
-        Text("消息列表")
-          .fontSize(20)
+        Text("消息")
+          .fontSize(22)
           .fontWeight(FontWeight.Bold)
+          .fontColor('#333333')
         Row()
       }
       .width('100%')
+      .height(56)
       .backgroundColor(Color.White)
       .justifyContent(FlexAlign.SpaceBetween)
-      .padding(15)
+      .padding({left: 16, right: 16})
+      .shadow({ radius: 8, color: '#0000000A', offsetX: 0, offsetY: 2 })
     }
     .width('100%')
     .height('100%')
-    // 根据显示区域判断
+    .backgroundColor('#F5F5F5')
     .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean, currentRatio: number) => {
       if (isVisible && currentRatio == 1.0) {
-        // 调用自定义的show方法
         this.onPageShow()
       } else if (currentRatio == 0.0) {
-        // 调用自定义的hide方法
       }
     })
-    // .backgroundColor('#f1f1f1')
   }
 }
