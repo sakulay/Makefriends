@@ -39,6 +39,7 @@ export struct RecPost {
     commentCount: 0,
     favoriteCount: 0
   }
+  @State cardOpacity: number = 0
 
   aboutToAppear() {
   }
@@ -51,6 +52,9 @@ export struct RecPost {
     }
     // this.postList.push(JSON.parse(this.mock))
     this.getList()
+    setTimeout(() => {
+      this.cardOpacity = 1
+    }, 100) // 模拟延迟显示
   }
   
   updatePostData() {
@@ -120,28 +124,8 @@ export struct RecPost {
   @Builder
   MyPostList() {
     ForEach(this.postList, (item: PostModel, index: number)=>{
-      // Button().width('50%').height(50).onClick(()=>{
-      //   let updatedList = [...this.postList]
-      //   let old = updatedList[index]
-      //
-      //   let newItem = new PostModel(
-      //     old.id,
-      //     old.userId,
-      //     "test", // 修改项
-      //     old.content,
-      //     old.imageList,
-      //     old.likeCount,
-      //     old.commentCount,
-      //     old.createTime,
-      //     old.userInfo
-      //   )
-      //   updatedList[index] = newItem
-      //   this.postList = updatedList
-      //
-      //   console.log(this.LOG, "click")
-      // })
-      // Text(this.postList[index].title)
       PostCard({item: this.postList[index]})
+        .opacity(this.cardOpacity)
         .gesture(LongPressGesture(
           {repeat: false}).onAction(() => {
           this.reportForm.complaintTargetId = item.id.toString()
@@ -183,7 +167,9 @@ export struct RecPost {
           }
           .width('100%')
           .constraintSize({minHeight: '100%'})
-          .backgroundColor('#fff8f7f7')
+          // .backgroundColor('#fff8f7f7')
+          .backgroundColor('#f5f7fa') // 更柔和的白蓝色
+          
         }
       }
       .scrollBarWidth(0)
@@ -226,12 +212,35 @@ export struct RecPost {
             offsetX: 5, // 阴影水平偏移量
             offsetY: 5 // 阴影垂直偏移量
           })
+        // Row()
+        //   .width(56)
+        //   .height(56)
+        //   .borderRadius(28)
+        //   .backgroundColor('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')
+        //   .opacity(this.buttonOpacity)
+        //   .shadow({
+        //     radius: 12,
+        //     color: '#aa000000',
+        //     offsetX: 4,
+        //     offsetY: 4
+        //   })
+        Row() {
+          Blank()
+            .width('50px')
+            .height('50px')
+            .borderRadius('50%')
+            .backgroundColor('linear-gradient(to right, #ff8a00, #e52e71)')  // 渐变色背景
+        }
+        .width('50px')
+        .height('50px')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .opacity(this.buttonOpacity)
         Image($r('app.media.ic_plus'))
           .width(21)
           .height(21)
           .margin({ right: 1, top: 2})
           .opacity(this.buttonOpacity)
-        //0
       }
       .position({ bottom: 30, right: 30})
       // 根据显示区域判断

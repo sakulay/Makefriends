@@ -94,10 +94,24 @@ export struct PostCard {
       // .backgroundColor(Color.Gray)
       .justifyContent(FlexAlign.End)
     }
-    .width('100%')
-    .backgroundColor(Color.White)
-    .padding(10)
-    .margin({top: 8})
+    // .width('100%')
+    // .backgroundColor(Color.White)
+    // .padding(10)
+    // .margin({top: 8})
+    .backgroundColor('#fefefe') // 柔白，而不是纯白
+    .borderRadius(20) // 更加圆润
+    .padding(12)
+    .margin({ top: 12, left: '3%', right: '3%' })
+    .shadow({
+      radius: 12,
+      color: 'rgba(0, 0, 0, 0.08)', // 柔和阴影
+      offsetX: 0,
+      offsetY: 6
+    })
+    .border({
+      width: 0.5,
+      color: '#e0e0e0'
+    })
     .onClick(() => {
       router.pushUrl({
         url: 'pages/post/PostPage',
