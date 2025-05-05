@@ -43,6 +43,9 @@ export struct Mine {
       }
       .onClick(() => {
         // 点击处理
+        router.pushUrl({
+          url: 'pages/post/MinePost'
+        })
       })
 
       Column() {
@@ -105,6 +108,9 @@ export struct Mine {
       }
       .onClick(() => {
         // 点击处理
+        router.pushUrl({
+          url: 'pages/mine/Complaints'
+        })
       })
     }
     .width('100%')

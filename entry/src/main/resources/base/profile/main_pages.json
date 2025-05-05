@@ -22,6 +22,7 @@
     "pages/search/SearchResult",
     "pages/mine/BrowseRecord",
     "pages/post/PostPage",
-    "pages/mine/Favorites"
+    "pages/mine/Favorites",
+    "pages/mine/Complaints"
   ]
 }

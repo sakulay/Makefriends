@@ -26,7 +26,7 @@ struct Favorites {
       const result = await getFavoritesPage({
         pageNum: this.pageNum,
         pageSize: this.pageSize,
-        studentId: getStudentId()
+        viewerId: getStudentId()
       });
       
       if (this.pageNum === 1) {

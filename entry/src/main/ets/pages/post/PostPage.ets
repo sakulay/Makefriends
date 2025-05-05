@@ -75,7 +75,7 @@ struct PostPage {
     if(params) {
       this.post = params
     }
-    console.log(this.LOG, `测试：${this.post.favoriteCount}`)
+    console.log(this.LOG, `接收参数：${JSON.stringify(params)}`)
     // 添加模拟数据
     this.commentList = mockData();
     getCommentPageById(new CommentQuery(1, 10, this.post.id)).then((res: Page<CommentModel>) => {

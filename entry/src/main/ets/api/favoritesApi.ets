@@ -8,7 +8,7 @@ const FAVORITES_BASE_URL = "/api/v1/appPostFavoritess"
 export class  FavoritesQuery {
   pageNum: number = 1;
   pageSize: number = 10;
-  studentId: string = '';
+  viewerId: string = '';
 }
 
 export interface FavoritesForm {

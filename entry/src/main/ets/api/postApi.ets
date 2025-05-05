@@ -42,13 +42,15 @@ export class PostQuery {
   status?: number;
   userId?: number;
   title?: string;
+  postIds?: number[];
 
-  constructor(pageNum: number, pageSize: number, status?: number, userId?: number, title?: string) {
+  constructor(pageNum: number, pageSize: number, status?: number, userId?: number, title?: string, postIds?: number[]) {
     this.pageNum = pageNum;
     this.pageSize = pageSize;
     this.status = status;
     this.userId = userId;
     this.title = title;
+    this.postIds = postIds;
   }
 }
 /**
