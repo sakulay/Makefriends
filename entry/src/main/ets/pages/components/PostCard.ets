@@ -39,15 +39,46 @@ export struct PostCard {
   build() {
     Column({space: 8}) {
       // 头像、用户名
-      Row({space: 8}) {
+      // Row({space: 8}) {
+      //   Image(this.item.userInfo.avatar)
+      //     .width(25)
+      //     .height(25)
+      //     .borderRadius(25)
+      //   Text(this.item.userInfo.nickname)
+      // }
+      // .width('100%')
+      // .justifyContent(FlexAlign.Start)
+      // 用户信息栏
+      Row() {
         Image(this.item.userInfo.avatar)
-          .width(25)
-          .height(25)
-          .borderRadius(25)
-        Text(this.item.userInfo.nickname)
+          .width(44)
+          .height(44)
+          .borderRadius(22)
+          .margin({ right: 12 })
+          .backgroundColor('#F5F5F5')
+          .onClick(()=>{
+            router.pushUrl({
+              url: 'pages/friends/InfoCard',
+              params: this.item.userInfo
+            })
+          })
+
+        Column() {
+          Text(this.item.userInfo.nickname)
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#333333')
+          Text(this.item.createTime)
+            .fontSize(12)
+            .fontColor('#999999')
+            .margin({ top: 4 })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
       }
       .width('100%')
-      .justifyContent(FlexAlign.Start)
+      // .padding({ top: 16, bottom: 16, left: 16, right: 16 })
+
       // 标题、部分内容
       Column({space: 5}) {
         Text(this.item.title)
@@ -74,18 +105,26 @@ export struct PostCard {
       .justifyContent(FlexAlign.Start)
       //  评论数、点赞数
       Row({space: 2}) {
-        Image($r('app.media.ic_comment'))
-          .width(25)
-          .height(25)
-          .opacity(0.6)
-        Text(this.item.commentCount.toString())
-          .margin({right: 8})
-          .fontColor(Color.Gray)
         Image($r('app.media.ic_like'))
           .width(23)
           .height(23)
           .margin({bottom: 4})
-          .opacity(0.6)
+          .opacity(0.3)
+        Text(this.item.likeCount.toString())
+          .fontColor(Color.Gray)
+          .margin({right: 7})
+        Image($r('app.media.ic_comment'))
+          .width(25)
+          .height(25)
+          .opacity(0.3)
+        Text(this.item.commentCount.toString())
+          .margin({right: 8})
+          .fontColor(Color.Gray)
+        Image($r('app.media.ic_star'))
+          .width(23)
+          .height(23)
+          .opacity(0.3)
+          .margin({bottom: 2})
         Text(this.item.likeCount.toString())
           .fontColor(Color.Gray)
       }
@@ -102,11 +141,17 @@ export struct PostCard {
     .borderRadius(20) // 更加圆润
     .padding(12)
     .margin({ top: 12, left: '3%', right: '3%' })
+    // .shadow({
+    //   radius: 12,
+    //   color: 'rgba(0, 0, 0, 0.08)', // 柔和阴影
+    //   offsetX: 0,
+    //   offsetY: 6
+    // })
     .shadow({
-      radius: 12,
-      color: 'rgba(0, 0, 0, 0.08)', // 柔和阴影
+      radius: 8,
+      color: '#1A000000',
       offsetX: 0,
-      offsetY: 6
+      offsetY: 2
     })
     .border({
       width: 0.5,

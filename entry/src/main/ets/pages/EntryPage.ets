@@ -9,7 +9,7 @@ struct EntryPage {
     setTimeout(() => {
       router.pushUrl({url: 'pages/Login'})
       router.clear()
-    }, 3000)
+    }, 10)
   }
   build() {
     Column() {
