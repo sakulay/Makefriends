@@ -1,15 +1,13 @@
-import { AppPostBrowseRecord } from '../../model/AppPostBrowseRecord';
-import { getBrowseRecordPage, deleteBrowseRecords } from '../../api/browseRecordApi';
-import { getStudentId } from '../../utils/utils';
 import { PostModel } from '../../api/postApi';
+import { getFavoritesPage, deleteFavorites } from '../../api/favoritesApi';
+import { getStudentId } from '../../utils/utils';
 import { Loading } from '../components/Loading';
 import { router } from '@kit.ArkUI';
 import { EmptyPage } from '../components/EmptyPage';
 
 @Entry
 @Component
-struct BrowseRecord {
-  private LOG = "[BrowseRecord]"
+struct Favorites {
   @State records: PostModel[] = [];
   @State loading: boolean = false;
   @State pageNum: number = 1;
@@ -17,20 +15,18 @@ struct BrowseRecord {
   @State hasMore: boolean = true;
 
   aboutToAppear() {
-    console.log(this.LOG, "router.getLength():", router.getLength())
     this.loadData();
   }
-  
 
   async loadData() {
     if (this.loading || !this.hasMore) return;
     
     this.loading = true;
     try {
-      const result = await getBrowseRecordPage({
+      const result = await getFavoritesPage({
         pageNum: this.pageNum,
         pageSize: this.pageSize,
-        viewerId: getStudentId()
+        studentId: getStudentId()
       });
       
       if (this.pageNum === 1) {
@@ -42,18 +38,18 @@ struct BrowseRecord {
       this.hasMore = result.list.length === this.pageSize;
       this.pageNum++;
     } catch (error) {
-      console.error('加载浏览记录失败:', error);
+      console.error('加载收藏记录失败:', error);
     } finally {
       this.loading = false;
     }
   }
 
-  async handleDelete(viewerId: string, postId: string) {
+  async handleDelete(postId: string) {
     try {
-      await deleteBrowseRecords(viewerId, postId);
+      await deleteFavorites(getStudentId(), postId);
       this.records = this.records.filter(record => record.id !== Number(postId));
     } catch (error) {
-      console.error('删除浏览记录失败:', error);
+      console.error('删除收藏记录失败:', error);
     }
   }
 
@@ -66,10 +62,9 @@ struct BrowseRecord {
           .height(24)
           .margin({ left: 12 })
           .onClick(() => {
-            // 返回上一页
             router.back();
           })
-        Text('浏览记录')
+        Text('我的收藏')
           .fontSize(18)
           .fontWeight(FontWeight.Medium)
           .margin({ left: 12 })
@@ -126,7 +121,7 @@ struct BrowseRecord {
                       Image($r('app.media.ic_delete'))
                         .width(16)
                         .height(16)
-                        .onClick(() => this.handleDelete(getStudentId(), record.id.toString()))
+                        .onClick(() => this.handleDelete(record.id.toString()))
                     }
                     .width('100%')
                     .justifyContent(FlexAlign.SpaceBetween)
@@ -138,14 +133,14 @@ struct BrowseRecord {
                 .backgroundColor('#FFFFFF')
                 .borderRadius(6)
                 .shadow({ radius: 2, color: '#1A000000', offsetX: 1, offsetY: 1 })
+                .onClick(() => {
+                  router.pushUrl({
+                    url: 'pages/post/PostPage',
+                    params: record
+                  }, router.RouterMode.Standard)
+                })
               }
               .margin({ top: 4, bottom: 4 })
-              .onClick(() => {
-                router.pushUrl({
-                  url: 'pages/post/PostPage',
-                  params: record
-                }, router.RouterMode.Standard)
-              })
             })
           }
           .onReachEnd(() => this.loadData())

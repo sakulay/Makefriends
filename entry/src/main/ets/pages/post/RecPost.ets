@@ -13,6 +13,7 @@ export interface PostParams {
   postId: number
   likeCount: number
   commentCount: number
+  favoriteCount: number
 }
 
 @Entry
@@ -35,7 +36,8 @@ export struct RecPost {
   @State params: PostParams = {
     postId: 0,
     likeCount: 0,
-    commentCount: 0
+    commentCount: 0,
+    favoriteCount: 0
   }
 
   aboutToAppear() {
@@ -55,6 +57,7 @@ export struct RecPost {
     const postId = this.params.postId
     const likeCount = this.params.likeCount
     const commentCount = this.params.commentCount
+    const favoriteCount = this.params.favoriteCount
     
     if (postId) {
       const index = this.postList.findIndex(post => post.id === postId)
@@ -63,6 +66,7 @@ export struct RecPost {
         // 创建全新的数组
         const newPostList = this.postList.slice()
         const oldPost = this.postList[index]
+        console.log(`${this.LOG} 更新前的帖子数据`, JSON.stringify(favoriteCount))
         const newPost = new PostModel(
           oldPost.id,
           oldPost.userId,
@@ -72,12 +76,12 @@ export struct RecPost {
           likeCount,
           commentCount,
           oldPost.createTime,
-          oldPost.userInfo
+          oldPost.userInfo,
+          favoriteCount
         )
+        console.log(`${this.LOG} 更新后的帖子数据`, JSON.stringify(newPost.favoriteCount))
         newPostList[index] = newPost
         this.postList = newPostList
-        console.log(`${this.LOG} 更新后的帖子数据`, JSON.stringify(this.postList[index]))
-        console.log(`${this.LOG} 整个数组长度`, this.postList.length)
       }
     }
   }

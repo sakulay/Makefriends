@@ -1,0 +1,247 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 266338304 bytes. Error detail: G1 virtual space
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   This process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3825), pid=34112, tid=37528
+#
+# JRE version:  (17.0.12+1) (build )
+# Java VM: OpenJDK 64-Bit Server VM (17.0.12+1-b1087.25, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dfile.encoding=UTF-8 -Dfile.encoding=GBK D:\Programing\software\Huawei\DevEco Studio\sdk\default\openharmony\toolchains\lib\app_packing_tool.jar --mode hap --force true --lib-path F:\MakeFriends\entry\build\default\intermediates\stripped_native_libs\default --json-path F:\MakeFriends\entry\build\default\intermediates\package\default\module.json --resources-path F:\MakeFriends\entry\build\default\intermediates\res\default\resources --index-path F:\MakeFriends\entry\build\default\intermediates\res\default\resources.index --pack-info-path F:\MakeFriends\entry\build\default\outputs\default\pack.info --out-path F:\MakeFriends\entry\build\default\outputs\default\entry-default-unsigned.hap --ets-path F:\MakeFriends\entry\build\default\intermediates\loader_out\default\ets --pkg-context-path F:\MakeFriends\entry\build\default\intermediates\loader\default\pkgContextInfo.json
+
+Host: AMD Ryzen 5 5600H with Radeon Graphics         , 12 cores, 15G,  Windows 11 , 64 bit Build 26100 (10.0.26100.3323)
+Time: Mon May  5 00:03:48 2025  Windows 11 , 64 bit Build 26100 (10.0.26100.3323) elapsed time: 0.025691 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000121bd4338b0):  JavaThread "Unknown thread" [_thread_in_vm, id=37528, stack(0x00000010f0100000,0x00000010f0200000)]
+
+Stack: [0x00000010f0100000,0x00000010f0200000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x688dd9]
+V  [jvm.dll+0x842eaa]
+V  [jvm.dll+0x844aee]
+V  [jvm.dll+0x845153]
+V  [jvm.dll+0x24ba3f]
+V  [jvm.dll+0x685ba9]
+V  [jvm.dll+0x67a45a]
+V  [jvm.dll+0x30c60b]
+V  [jvm.dll+0x313ab6]
+V  [jvm.dll+0x363c6e]
+V  [jvm.dll+0x363e9f]
+V  [jvm.dll+0x2e2658]
+V  [jvm.dll+0x2e3594]
+V  [jvm.dll+0x813b31]
+V  [jvm.dll+0x3719c1]
+V  [jvm.dll+0x7f2626]
+V  [jvm.dll+0x3f563f]
+V  [jvm.dll+0x3f7191]
+C  [jli.dll+0x528f]
+C  [ucrtbase.dll+0x37b0]
+C  [KERNEL32.DLL+0x2e8d7]
+C  [ntdll.dll+0xbbf6c]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007fffe7370f58, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+
+Other Threads:
+  0x00000121bd49f110 GCTaskThread "GC Thread#0" [stack: 0x00000010f0200000,0x00000010f0300000] [id=39044]
+  0x00000121bd4b0a00 ConcurrentGCThread "G1 Main Marker" [stack: 0x00000010f0300000,0x00000010f0400000] [id=5008]
+  0x00000121bd4b31f0 ConcurrentGCThread "G1 Conc#0" [stack: 0x00000010f0400000,0x00000010f0500000] [id=38956]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007fffe6b231c7]
+
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00000121bd42d910] Heap_lock - owner thread: 0x00000121bd4338b0
+
+Heap address: 0x0000000702400000, size: 4060 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) mapped at: [0x0000000000000000-0x0000000000000000-0x0000000000000000), size 0, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 1.
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0, Narrow klass range: 0x0
+
+GC Precious Log:
+<Empty>
+
+Heap:
+ garbage-first heap   total 0K, used 0K [0x0000000702400000, 0x0000000800000000)
+  region size 2048K, 0 young (0K), 0 survivors (0K)
+ Metaspace       used 0K, committed 0K, reserved 0K
+  class space    used 0K, committed 0K, reserved 0K
+
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, OA=open archive, CA=closed archive, TAMS=top-at-mark-start (previous, next)
+
+Card table byte_map: [0x00000121d0900000,0x00000121d10f0000] _byte_map_base: 0x00000121cd0ee000
+
+Marking Bits (Prev, Next): (CMBitMap*) 0x00000121bd49f640, (CMBitMap*) 0x00000121bd49f680
+ Prev Bits: [0x00000121d18e0000, 0x00000121d5850000)
+ Next Bits: [0x00000121d5850000, 0x00000121d97c0000)
+
+GC Heap History (0 events):
+No events
+
+Dll operation events (1 events):
+Event: 0.015 Loaded shared library D:\Programing\software\Huawei\DevEco Studio\jbr\bin\java.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff601300000 - 0x00007ff60130a000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\java.exe
+0x00007ff88f8e0000 - 0x00007ff88fb43000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ff88ebf0000 - 0x00007ff88ecb7000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ff88d140000 - 0x00007ff88d509000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ff88d510000 - 0x00007ff88d65c000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ff82a550000 - 0x00007ff82a56b000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\VCRUNTIME140.dll
+0x00007ff83afe0000 - 0x00007ff83aff7000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\jli.dll
+0x00007ff88d7e0000 - 0x00007ff88d9aa000 	C:\WINDOWS\System32\USER32.dll
+0x00007ff88cb70000 - 0x00007ff88cb97000 	C:\WINDOWS\System32\win32u.dll
+0x00007ff88e290000 - 0x00007ff88e2ba000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ff871cb0000 - 0x00007ff871f40000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.26100.3323_none_3e088096e3344490\COMCTL32.dll
+0x00007ff88cf40000 - 0x00007ff88d071000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ff88e1d0000 - 0x00007ff88e279000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ff88cba0000 - 0x00007ff88cc43000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ff88ea10000 - 0x00007ff88ea3f000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ff842a40000 - 0x00007ff842a4c000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\vcruntime140_1.dll
+0x00007ff819c60000 - 0x00007ff819ced000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\msvcp140.dll
+0x00007fffe6830000 - 0x00007fffe74b5000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\server\jvm.dll
+0x00007ff88ea80000 - 0x00007ff88eb32000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ff88eb40000 - 0x00007ff88ebe6000 	C:\WINDOWS\System32\sechost.dll
+0x00007ff88f480000 - 0x00007ff88f596000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ff88c2b0000 - 0x00007ff88c2fe000 	C:\WINDOWS\SYSTEM32\POWRPROF.dll
+0x00007ff87eba0000 - 0x00007ff87ebd6000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ff8877a0000 - 0x00007ff8877aa000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ff885dd0000 - 0x00007ff885ddb000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ff88e970000 - 0x00007ff88e9e4000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ff88c290000 - 0x00007ff88c2a4000 	C:\WINDOWS\SYSTEM32\UMPDC.dll
+0x00007ff88b850000 - 0x00007ff88b86a000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ff889700000 - 0x00007ff88970a000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\jimage.dll
+0x00007ff88a310000 - 0x00007ff88a551000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ff88dab0000 - 0x00007ff88de32000 	C:\WINDOWS\System32\combase.dll
+0x00007ff88d700000 - 0x00007ff88d7d6000 	C:\WINDOWS\System32\OLEAUT32.dll
+0x00007ff876890000 - 0x00007ff8768c9000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ff88d660000 - 0x00007ff88d6f9000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ff87fdf0000 - 0x00007ff87fe15000 	D:\Programing\software\Huawei\DevEco Studio\jbr\bin\java.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;D:\Programing\software\Huawei\DevEco Studio\jbr\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.26100.3323_none_3e088096e3344490;D:\Programing\software\Huawei\DevEco Studio\jbr\bin\server
+
+VM Arguments:
+jvm_args: -Dfile.encoding=UTF-8 -Dfile.encoding=GBK 
+java_command: D:\Programing\software\Huawei\DevEco Studio\sdk\default\openharmony\toolchains\lib\app_packing_tool.jar --mode hap --force true --lib-path F:\MakeFriends\entry\build\default\intermediates\stripped_native_libs\default --json-path F:\MakeFriends\entry\build\default\intermediates\package\default\module.json --resources-path F:\MakeFriends\entry\build\default\intermediates\res\default\resources --index-path F:\MakeFriends\entry\build\default\intermediates\res\default\resources.index --pack-info-path F:\MakeFriends\entry\build\default\outputs\default\pack.info --out-path F:\MakeFriends\entry\build\default\outputs\default\entry-default-unsigned.hap --ets-path F:\MakeFriends\entry\build\default\intermediates\loader_out\default\ets --pkg-context-path F:\MakeFriends\entry\build\default\intermediates\loader\default\pkgContextInfo.json
+java_class_path (initial): D:\Programing\software\Huawei\DevEco Studio\sdk\default\openharmony\toolchains\lib\app_packing_tool.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 3                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 10                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 2097152                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 266338304                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 4257218560                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 2097152                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5839372                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122909434                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122909434                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 4257218560                             {manageable} {ergonomic}
+     bool UseCompressedClassPointers               = true                           {product lp64_product} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags
+ #1: stderr all=off uptime,level,tags
+
+Environment Variables:
+JAVA_HOME=D:\Programing\software\Huawei\DevEco Studio\jbr
+JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8
+CLASSPATH=.;%JAVA_HOME%\lib;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar
+PATH=D:\Programing\software\Huawei\DevEco Studio\tools\node;D:\Programing\software\Huawei\DevEco Studio\jbr\bin;d:\software\cursor\resources\app\bin;C:\Windows\system32;D:\software\programing\VMware\bin\;D:\Program Files\Java\jdk-17.0.9\bin;D:\Program Files\Java\jdk-17.0.9\jre\bin;\bin;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;D:\Program Files\nodejs\node_global\node_modules;C:\Users\10555;D:\software\mysql-8.0.33-winx64\bin;D:\Program Files\apache-maven-3.9.2\bin;D:\software\programing\Git\cmd;D:\software\Mozilla Firefox;D:\Program Files\go\bin;D:\software\programing\xshell\;D:\software\programing\xftp\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;D:\Program Files\mingw64\bin;D:\Program Files\apache-tomcat-9.0.80\bin;D:\Program Files\apache-tomcat-9.0.80\lib;D:\Program Files\anaconda3\envs\forNodeGyp;D:\Program Files\anaconda3\Scripts;D:\Program Files\anaconda3\Library\bin;D:\Program Files\anaco;D:\Program Files\Java\jdk-17.0.9\bin;D:\Program Files\Java\jdk-17.0.9\jre\bin;D:\software\programing\Microsoft VS Code\bin;C:\Users\10555\go\bin;D:\software\Tencent\QQGame\Tempest\QQGameTempest\Hall.57986\;D:\software\programing\PyCharm 2022.1.3\bin;;C:\Users\10555\.dotnet\tools;D:\Program Files\nvm;D:\Program Files\nodejs;C:\Users\10555\AppData\Local\Microsoft\WindowsApps;;D:\Programing\software\Huawei\DevEco Studio\bin;;D:\software\cursor\resources\app\bin
+USERNAME=10555
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD
+TMP=C:\Users\10555\AppData\Local\Temp
+TEMP=C:\Users\10555\AppData\Local\Temp
+
+
+
+Periodic native trim disabled
+
+JNI global refs:
+JNI global refs: 0, weak refs: 0
+
+JNI global refs memory usage: 0, weak refs: 0
+
+OOME stack traces (most recent first):
+Classloader memory used:
+
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 11 , 64 bit Build 26100 (10.0.26100.3323)
+OS uptime: 1 days 14:11 hours
+Hyper-V role detected
+
+CPU: total 12 (initial active 12) (12 cores per cpu, 2 threads per core) family 25 model 80 stepping 0 microcode 0xa50000f, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4a, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, sha, fma, vzeroupper, clflush, clflushopt, hv
+Processor Information for all 12 processors :
+  Max Mhz: 3301, Current Mhz: 3301, Mhz Limit: 3301
+
+Memory: 4k page, system-wide physical 16236M (635M free)
+TotalPageFile size 41806M (AvailPageFile size 152M)
+current process WorkingSet (physical memory assigned to process): 13M, peak: 13M
+current process commit charge ("private bytes"): 64M, peak: 318M
+
+vm_info: OpenJDK 64-Bit Server VM (17.0.12+1-b1087.25) for windows-amd64 JRE (17.0.12+1-b1087.25), built on 2024-08-30 by "builduser" with MS VC++ 16.10 / 16.11 (VS2019)
+
+END.

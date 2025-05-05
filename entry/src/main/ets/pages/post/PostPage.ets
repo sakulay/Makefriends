@@ -17,6 +17,9 @@ import { CommentEmptyPage } from '../components/CommentEmptyPage';
 import { Loading } from '../components/Loading';
 import { mockData } from '../../mock/NewsDetailData';
 import { getPostLikePage, savePostLike, deletePostLike, PostLikeQuery, PostLikeForm } from '../../api/postLikeApi'
+import { saveFavorites, deleteFavorites, checkFavoritesStatus, getFavoriteRecord,
+  FavoritesForm } from '../../api/favoritesApi';
+
 
 @Entry
 @Component
@@ -44,6 +47,7 @@ struct PostPage {
   @State likeStatus: boolean = false
   @State starStatus: boolean = false
   @State likeCount: number = 0
+  @State favoriteCount: number = 0
 
   @State curUser: string = 'yuyu';   // 当前用户
   @State replyUser: string = "";   // 被回复人昵称
@@ -64,12 +68,14 @@ struct PostPage {
    */
   private topController: TabsController = new TabsController()
   @State isWebAtEnd: boolean = true; // web组件是否滚动到底部，ture到Web底部，false还未到底部。
+  @State isFavorited: boolean = false;
 
   async aboutToAppear() {
     let params = router.getParams() as PostModel
     if(params) {
       this.post = params
     }
+    console.log(this.LOG, `测试：${this.post.favoriteCount}`)
     // 添加模拟数据
     this.commentList = mockData();
     getCommentPageById(new CommentQuery(1, 10, this.post.id)).then((res: Page<CommentModel>) => {
@@ -98,6 +104,14 @@ struct PostPage {
     })
 
     // 检查点赞状态
+    this.checkLikeStatus()
+    // 检查收藏状态
+    this.checkFavoritesStatus();
+  }
+  /**
+   * 检查点赞状态
+   */
+  async checkLikeStatus() {
     const userId = getStudentId()
     const query = new PostLikeQuery(1, 1, Number(userId), this.post.id)
     try {
@@ -106,6 +120,64 @@ struct PostPage {
       this.likeCount = this.post.likeCount
     } catch (error) {
       console.error(this.LOG, '获取点赞状态失败:', error)
+    }
+  }
+  /**
+   * 检查收藏状态
+   */
+  async checkFavoritesStatus() {
+    try {
+      const result = await getFavoriteRecord(getStudentId(), this.post.id.toString())
+      this.isFavorited = result != null? true : false;
+      this.favoriteCount = this.post.favoriteCount;
+      console.log(this.LOG, '收藏状态:', this.post.favoriteCount)
+    } catch (error) {
+      console.error(this.LOG, '检查收藏状态失败:', error);
+    }
+  }
+
+  async handleLike() {
+    const userId = getStudentId()
+    try {
+      if (this.likeStatus) {
+        // 取消点赞
+        console.log(this.LOG, `取消点赞: postId=${this.post.id}`)
+        await deletePostLike(userId, this.post.id.toString())
+        this.likeStatus = false
+        this.likeCount = Math.max(0, this.likeCount - 1)
+      } else {
+        // 点赞
+        console.log(this.LOG, `点赞: postId=${this.post.id}`)
+        const form = new PostLikeForm(Number(userId), this.post.id)
+        await savePostLike(form)
+        this.likeStatus = true
+        this.likeCount++
+      }
+    } catch (error) {
+      console.error(this.LOG, '点赞操作失败:', error)
+    }
+  }
+  async handleFavorites() {
+    try {
+      if (this.isFavorited) {
+        // 取消收藏
+        console.log(this.LOG, `取消收藏: postId=${this.post.id}`);
+        await deleteFavorites(getStudentId(), this.post.id.toString());
+        this.isFavorited = false;
+        this.favoriteCount = Math.max(0, this.favoriteCount - 1);
+      } else {
+        // 添加收藏
+        console.log(this.LOG, `收藏: postId=${this.post.id}`);
+        const form: FavoritesForm = {
+          postId: this.post.id.toString(),
+          userId: getStudentId()
+        };
+        await saveFavorites(form);
+        this.isFavorited = true;
+        this.favoriteCount++;
+      }
+    } catch (error) {
+      console.error(this.LOG, '收藏操作失败:', error);
     }
   }
 
@@ -278,12 +350,13 @@ struct PostPage {
         .margin({ left: 10 })
         .onClick(()=>{
           console.log("返回")
-          console.log('[PostPage] 返回前 router.getLength():', router.getLength())
+          // console.log('[PostPage] 返回前 收藏数量', router.getLength())
           let length : number = Number(router.getLength())
           router.back(length - 1, {
             postId: this.post.id,
             likeCount: this.likeCount,
-            commentCount: this.post.commentCount
+            commentCount: this.post.commentCount,
+            favoriteCount: this.favoriteCount
           })
         })
     }
@@ -319,27 +392,7 @@ struct PostPage {
             .width(25)
             .height(25)
             .opacity(this.likeStatus ? 1 : 0.6)
-            .onClick(async () => {
-              const userId = getStudentId()
-              try {
-                if (this.likeStatus) {
-                  // 取消点赞
-                  console.log(this.LOG, `取消点赞: postId=${this.post.id}`)
-                  await deletePostLike(userId, this.post.id.toString())
-                  this.likeStatus = false
-                  this.likeCount = Math.max(0, this.likeCount - 1)
-                } else {
-                  // 点赞
-                  console.log(this.LOG, `点赞: postId=${this.post.id}`)
-                  const form = new PostLikeForm(Number(userId), this.post.id)
-                  await savePostLike(form)
-                  this.likeStatus = true
-                  this.likeCount++
-                }
-              } catch (error) {
-                console.error(this.LOG, '点赞操作失败:', error)
-              }
-            })
+            .onClick(() => this.handleLike())
           Text(this.likeCount.toString())
             .fontColor(this.likeStatus ? Color.Black : Color.Gray)
         }
@@ -351,17 +404,14 @@ struct PostPage {
           Text(this.post.commentCount.toString())
             .fontColor(Color.Gray)
         }
-        // .padding({top: 2})
         Column() {
-          Image($r('app.media.ic_star'))
-            .width(25)
-            .height(25)
-            .opacity(this.starStatus ? 1 : 0.6)
-            .onClick(() => {
-              this.starStatus = !this.starStatus
-            })
-          Text('25')
-            .fontColor(this.starStatus? Color.Black : Color.Gray)
+          Image(this.isFavorited ? $r('app.media.ic_star') : $r('app.media.news_star'))
+            .width(24)
+            .height(24)
+            .opacity(this.isFavorited ? 1 : 0.6)
+            .onClick(() => this.handleFavorites())
+          Text(this.favoriteCount.toString())
+            .fontColor(this.isFavorited ? Color.Black : Color.Gray)
         }
       }
       .layoutWeight(1)

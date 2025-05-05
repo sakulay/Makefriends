@@ -1,6 +1,6 @@
 import { HeaderContentType } from "../common/HeaderContentType";
 import { Delete, Get, Post } from "../utils/request";
-import { AppPostBrowseRecord, AppPostBrowseRecordQuery, AppPostBrowseRecordForm } from "../model/AppPostBrowseRecord";
+import { AppPostBrowseRecordQuery, AppPostBrowseRecordForm } from "../model/AppPostBrowseRecord";
 import { Page } from "./friendsApi";
 import { PostModel } from "./postApi";
 

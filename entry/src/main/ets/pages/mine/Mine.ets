@@ -82,7 +82,9 @@ export struct Mine {
           .margin({ top: 4 })
       }
       .onClick(() => {
-        // 点击处理
+        router.pushUrl({
+          url: 'pages/mine/Favorites'
+        })
       })
 
       Column() {

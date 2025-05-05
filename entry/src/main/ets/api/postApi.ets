@@ -17,8 +17,9 @@ export class PostModel{
   commentCount: number
   createTime: string
   userInfo: UserSimpleInfo
+  favoriteCount: number = 0
 
-  constructor(id: number, userId: number, title: string, content: string, imgList: PostImage[], likeCount: number, commentCount: number, createTime: string, userInfo: UserSimpleInfo) {
+  constructor(id: number, userId: number, title: string, content: string, imgList: PostImage[], likeCount: number, commentCount: number, createTime: string, userInfo: UserSimpleInfo, favoriteCount?: number) {
     this.id = id;
     this.userId = userId;
     this.title = title;
@@ -28,6 +29,8 @@ export class PostModel{
     this.commentCount = commentCount;
     this.createTime = createTime;
     this.userInfo = userInfo;
+    if(favoriteCount != null) this.favoriteCount = favoriteCount;
+
   }
 }
 /**
