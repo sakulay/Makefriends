@@ -74,6 +74,11 @@ export struct Home {
             Image($r('app.media.ic_email'))
               .width(25)
               .height(25)
+              .onClick(() => {
+                router.pushUrl({
+                  url: 'pages/notice/NoticeListPage'
+                });
+              })
           }
         }
         .width('100%')

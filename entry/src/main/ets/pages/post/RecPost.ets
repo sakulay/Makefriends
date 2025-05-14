@@ -8,6 +8,7 @@ import { Loading } from '../components/Loading'
 import { CustomDialogExample } from '../View/DialogBottom'
 import { ReportForm } from '../../api/reportApi'
 import { PostList } from "../../utils/Mock"
+import { CategoryModel, CategoryQuery, getCategoryPage, mockCategories } from '../../api/categoryApi'
 
 export interface PostParams {
   postId: number
@@ -40,8 +41,10 @@ export struct RecPost {
     favoriteCount: 0
   }
   @State cardOpacity: number = 0
-
+  @State selectedCategory: number = 0 // 当前选中的分类ID
+  @State categories: CategoryModel[] = [new CategoryModel(0, '全部', '所有分类', 0, '')]
   aboutToAppear() {
+    this.getCategories()
   }
   onPageShow() {
     console.log(`${this.LOG} aboutToAppear`)
@@ -89,12 +92,46 @@ export struct RecPost {
       }
     }
   }
+  /**
+   * 获取分类
+   */
+  getCategories() {
+    this.isLoading = true
+    let queryParams = new CategoryQuery(1, 10, 0)
+    getCategoryPage(queryParams).then((res) => {
+      console.log('获取分类成功: ', JSON.stringify(res))
+      this.categories.push(...res.list)
+      this.isLoading = false
+    }).catch((err: string) => {
+      console.error('获取分类失败: ', err)
+      showBottomError(this.getUIContext(), err)
+    })
+  }
+  /**
+   * 获取帖子列表
+   */
   getList() {
     this.isLoading = true
-    const queryParam = new PostQuery(this.page, 10, 1)
+    
+    // 创建查询参数对象，并添加分类ID
+    const queryParam = new PostQuery(
+      this.page, 
+      10, 
+      1, 
+      undefined, 
+      undefined, 
+      undefined, 
+      this.selectedCategory !== 0 ? this.selectedCategory : undefined
+    )
+    
+    if (this.selectedCategory !== 0) {
+      console.log(`${this.LOG} 按分类查询，分类ID: ${this.selectedCategory}`)
+    }
+    
     getRecPostList(queryParam).then((res) => {
       if(res.list.length > 0) {
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
+        
         // 更新现有帖子的数据
         res.list.forEach(newPost => {
           const existingPostIndex = this.postList.findIndex(post => post.id === newPost.id)
@@ -107,10 +144,6 @@ export struct RecPost {
             // 添加新帖子
             this.postList.push(newPost)
           }
-        })
-        
-        this.postList.forEach((item: PostModel) => {
-          // console.log(`文章${item.id}: 点赞数 ${JSON.stringify(item.likeCount)} 评论数 ${JSON.stringify(item.commentCount)}`)
         })
       } else {
         this.isNone = true
@@ -136,6 +169,33 @@ export struct RecPost {
     }, (item: PostModel) => item.id.toString())
   }
 
+  @Builder
+  CategoryBar() {
+    Scroll() {
+      Row({ space: 8 }) {
+        ForEach(this.categories, (item: CategoryModel) => {
+          Text(item.name)
+            .fontSize(14)
+            .fontWeight(this.selectedCategory === item.id ? FontWeight.Bold : FontWeight.Normal)
+            .fontColor(this.selectedCategory === item.id ? '#2080f0' : '#666666')
+            .backgroundColor(this.selectedCategory === item.id ? '#E6F2FF' : '#F5F5F5')
+            .borderRadius(16)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .onClick(() => {
+              this.switchCategory(item.id)
+            })
+        }, (item: CategoryModel) => item.id.toString())
+      }
+      .padding({ left: 10, right: 10 })
+    }
+    .scrollable(ScrollDirection.Horizontal)
+    .scrollBar(BarState.Off)
+    .width('100%')
+    .height(40)
+    .backgroundColor(Color.White)
+    .margin({bottom: 8})
+  }
+
   dialogControllerBottom: CustomDialogController | null = new CustomDialogController({
     builder: CustomDialogExample({reportForm: this.reportForm}),
     openAnimation: {
@@ -151,50 +211,65 @@ export struct RecPost {
     cornerRadius: 10,
   })
 
+  // 切换分类
+  switchCategory(categoryId: number) {
+    if (this.selectedCategory === categoryId) return
+
+    this.selectedCategory = categoryId
+    this.page = 1 // 重置页码
+    this.postList = [] // 清空现有帖子列表
+    this.isNone = false // 重置结束标记
+    this.getList() // 重新获取帖子列表
+  }
 
   build() {
     Stack() {
-      Scroll() {
-        if(this.postList.length == 0) {
-          EmptyPage()
-        } else {
-          Column() {
-            this.MyPostList()
-            if(this.isLoading) {
-              Loading({h: "10%", text: ''})
-                .offset({bottom: 0})
+      Column() {
+        // 添加分类选择栏
+        this.CategoryBar()
+        Scroll() {
+          if(this.postList.length == 0) {
+            EmptyPage()
+          } else {
+            Column() {
+              this.MyPostList()
+              if(this.isLoading) {
+                Loading({h: "10%", text: ''})
+                  .offset({bottom: 0})
+              }
+            }
+            .width('100%')
+            .constraintSize({minHeight: '100%'})
+            // .backgroundColor('#fff8f7f7')
+            .backgroundColor('#f5f7fa') // 更柔和的白蓝色
+
+          }
+        }
+        .scrollBarWidth(0)
+        .onWillScroll((xOffset: number, yOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
+          if(yOffset > 0) {
+            // 向下滚动
+            this.buttonShow = false
+            if(this.buttonOpacity > 0) {
+              this.buttonOpacity = 0
+            }
+          } else {
+            this.buttonShow = true
+            this.buttonOpacity = 0.95
+          }
+        })
+        .onScrollEdge((event)=>{
+          if(event == 2){
+            if(!this.isNone) {
+              this.page++
+              this.getList()
+            } else {
+              showBottomToast(this.getUIContext(), '没有更多了')
             }
           }
-          .width('100%')
-          .constraintSize({minHeight: '100%'})
-          // .backgroundColor('#fff8f7f7')
-          .backgroundColor('#f5f7fa') // 更柔和的白蓝色
-          
-        }
+        })
       }
-      .scrollBarWidth(0)
-      .onWillScroll((xOffset: number, yOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
-        if(yOffset > 0) {
-          // 向下滚动
-          this.buttonShow = false
-          if(this.buttonOpacity > 0) {
-            this.buttonOpacity = 0
-          }
-        } else {
-          this.buttonShow = true
-          this.buttonOpacity = 0.95
-        }
-      })
-      .onScrollEdge((event)=>{
-        if(event == 2){
-          if(!this.isNone) {
-            this.page++
-            this.getList()
-          } else {
-            showBottomToast(this.getUIContext(), '没有更多了')
-          }
-        }
-      })
+
       /**
        * 添加按钮
        */

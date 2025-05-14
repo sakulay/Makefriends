@@ -18,8 +18,10 @@ export class PostModel{
   createTime: string
   userInfo: UserSimpleInfo
   favoriteCount: number = 0
+  categoryId?: number
+  categoryName?: string
 
-  constructor(id: number, userId: number, title: string, content: string, imgList: PostImage[], likeCount: number, commentCount: number, createTime: string, userInfo: UserSimpleInfo, favoriteCount?: number) {
+  constructor(id: number, userId: number, title: string, content: string, imgList: PostImage[], likeCount: number, commentCount: number, createTime: string, userInfo: UserSimpleInfo, favoriteCount?: number, categoryId?: number, categoryName?: string) {
     this.id = id;
     this.userId = userId;
     this.title = title;
@@ -30,7 +32,8 @@ export class PostModel{
     this.createTime = createTime;
     this.userInfo = userInfo;
     if(favoriteCount != null) this.favoriteCount = favoriteCount;
-
+    this.categoryId = categoryId;
+    this.categoryName = categoryName;
   }
 }
 /**
@@ -43,14 +46,16 @@ export class PostQuery {
   userId?: number;
   title?: string;
   postIds?: number[];
+  categoryId?: number;
 
-  constructor(pageNum: number, pageSize: number, status?: number, userId?: number, title?: string, postIds?: number[]) {
+  constructor(pageNum: number, pageSize: number, status?: number, userId?: number, title?: string, postIds?: number[], categoryId?: number) {
     this.pageNum = pageNum;
     this.pageSize = pageSize;
     this.status = status;
     this.userId = userId;
     this.title = title;
     this.postIds = postIds;
+    this.categoryId = categoryId;
   }
 }
 /**

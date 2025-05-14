@@ -23,6 +23,8 @@
     "pages/mine/BrowseRecord",
     "pages/post/PostPage",
     "pages/mine/Favorites",
-    "pages/mine/Complaints"
+    "pages/mine/Complaints",
+    "pages/notice/NoticeListPage",
+    "pages/notice/NoticeDetailPage"
   ]
 }
