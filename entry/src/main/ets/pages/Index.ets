@@ -8,7 +8,6 @@ import { News } from './News/News';
 import { BotItem, TopItem } from '../utils/Mock';
 import { initMessage, MessageModel, Unread } from '../model/MessageModel';
 import { initMineSimpleInfo } from '../viewmodel/UserProfileModel';
-import { DownloadImagePage } from './Test';
 import { getAppChatUnreads } from '../api/chatApi';
 import { getStudentId } from '../utils/utils';
 

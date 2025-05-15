@@ -68,7 +68,14 @@
           "when": "inuse"
         }
       },
-
+      {
+        "name": "ohos.permission.VIBRATE",
+        "reason": "$string:module_desc",
+        "usedScene": {
+          "abilities": [ "EntryAbility" ],
+          "when": "inuse"
+        }
+      }
     ]
   }
 }

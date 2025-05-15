@@ -1,12 +1,15 @@
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { CustomColors, router, TipsDialog } from '@kit.ArkUI';
+import { CustomColors, router } from '@kit.ArkUI';
 import { PostImage, PostModel, saveAppPost } from '../../api/postApi';
 import { UserSimpleInfo } from '../../viewmodel/UserProfileModel';
 import { Upload, upload } from '../../api/uploadApi';
 import { common } from '@kit.AbilityKit';
 import { showTopToast } from '../../utils/toast';
 import { getStudentId } from '../../utils/utils';
+import { showBottomError, showBottomToast } from '../../utils/toast'
+import { CategoryModel, CategoryQuery, getCategoryPage } from '../../api/categoryApi'
+import vibrator from '@ohos.vibrator';
 
 class CustomThemeImpl implements CustomTheme {
   colors?: CustomColors;
@@ -18,8 +21,8 @@ class CustomThemeImpl implements CustomTheme {
 
 // 自定义内容文字及loading组件主题颜色
 class CustomThemeColors implements CustomColors {
-  fontPrimary = Color.White;
-  iconPrimary = '#ffd000cd';
+  fontPrimary = '#333333';  // 深色文字
+  iconPrimary = '#FF4081';  // 警告图标颜色
 }
 class Post {
   title: string;
@@ -30,6 +33,40 @@ class Post {
     this.title = title;
     this.content = content;
     this.list = list;
+  }
+}
+
+@CustomDialog
+struct TipsDialog {
+  controller?: CustomDialogController
+  
+  @Prop imageRes: Resource
+  @Prop content: string
+  @Prop theme: CustomTheme
+  
+  build() {
+    Column() {
+      Image(this.imageRes).width(40).height(40).margin(10)
+      Text(this.content).fontSize(18).margin(10).fontColor(Color.White)
+    }
+    .backgroundColor(Color.Gray)
+    .borderRadius(12)
+    .padding(20)
+    .width('50%')
+    .alignItems(HorizontalAlign.Center)
+    .shadow({
+      radius: 12,
+      color: 'rgba(0, 0, 0, 0.1)',
+      offsetX: 0,
+      offsetY: 2
+    })
+    .animation({
+      duration: 250,
+      curve: Curve.EaseOut,
+      delay: 0,
+      iterations: 1,
+      playMode: PlayMode.Normal
+    })
   }
 }
 
@@ -45,28 +82,49 @@ struct AddPost {
   @State titleCnt: number = 45
   @State post: PostModel = new PostModel(0, 1, '', '', this.imgs, 0, 0, '', new UserSimpleInfo('', '', '', ''));
   @State customTheme: CustomTheme = new CustomThemeImpl(new CustomThemeColors());
+  @State categories: CategoryModel[] = [] // 分类列表
+  @State selectedCategory: CategoryModel | null = null // 当前选中的分类
 
   titleTips: CustomDialogController = new CustomDialogController({
     builder: TipsDialog({
       imageRes: $r('app.media.ic_warning'),
       content: '标题不能为空',
-      theme: this.customTheme,
+      theme: new CustomThemeImpl(new CustomThemeColors()),
     }),
-    backgroundColor: '#92000000',
+    customStyle: true,
+    alignment: DialogAlignment.Center,
     isModal: false,
     width: 200,
-    // height: 130,
   })
+
   contentTips: CustomDialogController = new CustomDialogController({
     builder: TipsDialog({
       imageRes: $r('app.media.ic_warning'),
       content: '内容不能为空',
-      theme: this.customTheme,
+      theme: new CustomThemeImpl(new CustomThemeColors()),
     }),
-    backgroundColor: '#92000000',
+    customStyle: true,
+    alignment: DialogAlignment.Center,
+    backgroundColor: '#FFFFFF',
+    maskColor: 'rgba(0, 0, 0, 0.6)',
     isModal: false,
     width: 200,
   })
+
+  categoryTips: CustomDialogController = new CustomDialogController({
+    builder: TipsDialog({
+      imageRes: $r('app.media.ic_warning'),
+      content: '请选择分类',
+      theme: new CustomThemeImpl(new CustomThemeColors()),
+    }),
+    customStyle: true,
+    alignment: DialogAlignment.Center,
+    backgroundColor: '#FFFFFF',
+    maskColor: 'rgba(0, 0, 0, 0.6)',
+    isModal: false,
+    width: 200,
+  })
+
   // 添加保存草稿的方法
   saveDraft() {
     // 这里可以添加保存草稿的逻辑，例如将 post 对象保存到本地存储或服务器
@@ -113,11 +171,15 @@ struct AddPost {
 
   // 发布
   publish() {
-    // 检查标题和内容是否为空
     if(this.post.title == '') {
       this.titleTips.open()
       setTimeout(() => {
         this.titleTips.close()
+      }, 2000)
+    } else if(!this.selectedCategory) {
+      this.categoryTips.open()
+      setTimeout(() => {
+        this.categoryTips.close()
       }, 2000)
     } else if(this.post.content == '') {
       this.contentTips.open()
@@ -191,6 +253,25 @@ struct AddPost {
       console.error(this.LOG, "发布失败：", e)
     })
   }
+
+  aboutToAppear() {
+    this.getCategories()
+  }
+
+  /**
+   * 获取分类列表
+   */
+  getCategories() {
+    let queryParams = new CategoryQuery(1, 50, 0)
+    getCategoryPage(queryParams).then((res) => {
+      console.log('获取分类成功: ', JSON.stringify(res))
+      this.categories = res.list
+    }).catch((err: string) => {
+      console.error('获取分类失败: ', err)
+      showBottomError(this.getUIContext(), err)
+    })
+  }
+
   @Builder
   top() {
     Row() {
@@ -219,6 +300,67 @@ struct AddPost {
   }
 
   @Builder
+  CategorySelector() {
+    Column() {
+      Row() {
+        Text('选择分类')
+          .fontSize(20)
+          .fontWeight(FontWeight.Normal)
+          .fontColor(Color.Gray)
+        Text('*')
+          .fontSize(16)
+          .fontColor('#FF4081')
+          .margin({ left: 5, right: 5 })
+      }
+      .width('100%')
+      .margin({ bottom: 12, top: 16 })
+
+      Scroll() {
+        Row({ space: 12 }) {
+          ForEach(this.categories, (item: CategoryModel) => {
+            Column() {
+              Text(item.name)
+                .fontSize(14)
+                .fontWeight(this.selectedCategory?.id === item.id ? FontWeight.Bold : FontWeight.Normal)
+                .fontColor(this.selectedCategory?.id === item.id ? '#2080f0' : '#666666')
+            }
+            .backgroundColor(this.selectedCategory?.id === item.id ? '#E6F2FF' : '#F5F5F5')
+            .borderRadius(20)
+            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+            .animation({
+              duration: 250,
+              curve: Curve.EaseInOut
+            })
+            .onClick(() => {
+              this.selectedCategory = item
+              this.post.categoryId = item.id
+              this.post.categoryName = item.name
+              // 使用正确的振动参数
+              try {
+                vibrator.startVibration(
+                  { type: 'time', duration: 10 },  // 振动效果
+                  { id: 1, usage: 'touch' }        // 振动属性
+                )
+              } catch (error) {
+                console.error('触感反馈失败:', error)
+              }
+            })
+          })
+        }
+        .padding({ left: 8, right: 8 })
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .width('100%')
+      .height(44)
+    }
+    .width('100%')
+    .backgroundColor(Color.White)
+    .borderRadius(12)
+    .padding({ top: 4, bottom: 16 })
+  }
+
+  @Builder
   postBody() {
     Column() {
       Row() {
@@ -234,14 +376,24 @@ struct AddPost {
           .layoutWeight(1)
           .onChange((value: string) => {
             this.titleCnt = 45 - value.length;
-          }) // 添加 onChange 事件来更新 title 和 titleCnt
-        // 标题剩余字数提示
+          })
         Text(`${this.titleCnt}`)
           .fontSize(15)
           .fontColor(Color.Gray)
           .margin({top: 15})
       }
+      .padding({ bottom: 8 })
+
       Divider()
+        .color('#F5F5F5')
+        .width('100%')
+        .height(1)
+
+      Divider()
+        .color('#F5F5F5')
+        .width('100%')
+        .height(1)
+
       // 内容
       TextArea({placeholder: '内容', text: $$this.post.content})
         .padding({left: 5, bottom: 10, top: 10, right: 5})
@@ -249,12 +401,16 @@ struct AddPost {
         .backgroundColor(Color.White)
         .constraintSize({minHeight: 200})
         .fontSize(20)
-        .placeholderFont({size: 20})
+        .placeholderFont({size: 23})
         .maxLength(2000)
         .showCounter(true,{
           thresholdPercentage: 80,
           highlightBorder: false
         })
+
+      // 分类选择器
+      this.CategorySelector()
+
       // 图片
       Flex({direction: FlexDirection.Row, wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start}) {
         ForEach(this.imgs, (pic: PostImage, index: number) => {
@@ -304,23 +460,12 @@ struct AddPost {
         })
       }
       .width('100%')
-      // Button("点击")
-      //   .width('60%')
-      //   .onClick(() => {
-      //     if(this.tt == 0) {
-      //       this.imgs.push(new PostImage('', '', 'http://111.230.102.82:40061/i/2025/02/26/p1mi5m-0.jpg', ''))
-      //       this.tt++
-      //     } else {
-      //       this.imgs.push(new PostImage('', '', 'http://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1CRajx.img', ''))
-      //       this.tt--
-      //     }
-      //     console.log(JSON.stringify(this.post.imageList))
-      //   })
     }
     .constraintSize({minHeight: "100%"})
     .width('100%')
     .padding({left: 10, right: 10, bottom: 10, top: 10})
   }
+
 
   build() {
     Column() {

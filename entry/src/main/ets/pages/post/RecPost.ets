@@ -97,7 +97,7 @@ export struct RecPost {
    */
   getCategories() {
     this.isLoading = true
-    let queryParams = new CategoryQuery(1, 10, 0)
+    let queryParams = new CategoryQuery(1, 50, 0)
     getCategoryPage(queryParams).then((res) => {
       console.log('获取分类成功: ', JSON.stringify(res))
       this.categories.push(...res.list)
@@ -242,7 +242,7 @@ export struct RecPost {
             .constraintSize({minHeight: '100%'})
             // .backgroundColor('#fff8f7f7')
             .backgroundColor('#f5f7fa') // 更柔和的白蓝色
-
+            .padding({bottom: 55})
           }
         }
         .scrollBarWidth(0)

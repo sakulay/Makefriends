@@ -77,7 +77,7 @@ struct PostPage {
     }
     console.log(this.LOG, `接收参数：${JSON.stringify(params)}`)
     // 添加模拟数据
-    this.commentList = mockData();
+    // this.commentList = mockData();
     getCommentPageById(new CommentQuery(1, 10, this.post.id)).then((res: Page<CommentModel>) => {
       console.log(this.LOG, `获取评论列表成功 ${JSON.stringify(res.list)}`)
       // 将获取到的评论列表数据赋值给 commentList

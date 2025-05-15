@@ -38,17 +38,6 @@ export struct PostCard {
 
   build() {
     Column({space: 8}) {
-      // 头像、用户名
-      // Row({space: 8}) {
-      //   Image(this.item.userInfo.avatar)
-      //     .width(25)
-      //     .height(25)
-      //     .borderRadius(25)
-      //   Text(this.item.userInfo.nickname)
-      // }
-      // .width('100%')
-      // .justifyContent(FlexAlign.Start)
-      // 用户信息栏
       Row() {
         Image(this.item.userInfo.avatar)
           .width(44)
@@ -103,50 +92,55 @@ export struct PostCard {
       }
       .width('100%')
       .justifyContent(FlexAlign.Start)
-      //  评论数、点赞数
-      Row({space: 2}) {
-        Image($r('app.media.ic_like'))
-          .width(23)
-          .height(23)
-          .margin({bottom: 4})
-          .opacity(0.3)
-        Text(this.item.likeCount.toString())
-          .fontColor(Color.Gray)
-          .margin({right: 7})
-        Image($r('app.media.ic_comment'))
-          .width(25)
-          .height(25)
-          .opacity(0.3)
-        Text(this.item.commentCount.toString())
-          .margin({right: 8})
-          .fontColor(Color.Gray)
-        Image($r('app.media.ic_star'))
-          .width(23)
-          .height(23)
-          .opacity(0.3)
-          .margin({bottom: 2})
-        Text(this.item.likeCount.toString())
-          .fontColor(Color.Gray)
+
+      // 底部操作栏
+      Row() {
+        // 左侧分类标签
+        if (this.item.categoryName) {
+          Text(this.item.categoryName)
+            .fontSize(12)
+            .fontColor('#2080f0')
+            .backgroundColor('#E6F2FF')
+            .borderRadius(10)
+            .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+        }
+
+        // 右侧点赞等操作
+        Row({space: 2}) {
+          Image($r('app.media.ic_like'))
+            .width(23)
+            .height(23)
+            .margin({bottom: 4})
+            .opacity(0.3)
+          Text(this.item.likeCount.toString())
+            .fontColor(Color.Gray)
+            .margin({right: 7})
+          Image($r('app.media.ic_comment'))
+            .width(25)
+            .height(25)
+            .opacity(0.3)
+          Text(this.item.commentCount.toString())
+            .margin({right: 8})
+            .fontColor(Color.Gray)
+          Image($r('app.media.ic_star'))
+            .width(23)
+            .height(23)
+            .opacity(0.3)
+            .margin({bottom: 2})
+          Text(this.item.likeCount.toString())
+            .fontColor(Color.Gray)
+        }
       }
       .width('100%')
       .height(30)
-      // .backgroundColor(Color.Gray)
-      .justifyContent(FlexAlign.End)
+      .justifyContent(FlexAlign.SpaceBetween)
+      .alignItems(VerticalAlign.Center)
     }
-    // .width('100%')
-    // .backgroundColor(Color.White)
-    // .padding(10)
-    // .margin({top: 8})
     .backgroundColor('#fefefe') // 柔白，而不是纯白
     .borderRadius(20) // 更加圆润
     .padding(12)
     .margin({ top: 12, left: '3%', right: '3%' })
-    // .shadow({
-    //   radius: 12,
-    //   color: 'rgba(0, 0, 0, 0.08)', // 柔和阴影
-    //   offsetX: 0,
-    //   offsetY: 6
-    // })
+
     .shadow({
       radius: 8,
       color: '#1A000000',

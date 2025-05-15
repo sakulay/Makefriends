@@ -223,6 +223,10 @@ export struct Mine {
               router.clear()
             })
           })
+
+        Button("上传图片").onClick(() => {
+          router.pushUrl({ url: "pages/Test" })
+        })
       }
       .width('100%')
       .height('100%')
