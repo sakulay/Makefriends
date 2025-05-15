@@ -33,6 +33,7 @@ export struct RecPost {
   @State isNone: boolean = false
   @State page: number = 1
   @State isLoading: boolean = false
+  @State isRefreshing: boolean = false
   @State reportForm: ReportForm = new ReportForm(1, "", "");
   @State params: PostParams = {
     postId: 0,
@@ -40,8 +41,8 @@ export struct RecPost {
     commentCount: 0,
     favoriteCount: 0
   }
-  @State cardOpacity: number = 0
-  @State selectedCategory: number = 0 // 当前选中的分类ID
+  @State cardOpacity: number = 1
+  @State selectedCategory: number = 0
   @State categories: CategoryModel[] = [new CategoryModel(0, '全部', '所有分类', 0, '')]
   aboutToAppear() {
     this.getCategories()
@@ -113,7 +114,6 @@ export struct RecPost {
   getList() {
     this.isLoading = true
     
-    // 创建查询参数对象，并添加分类ID
     const queryParam = new PostQuery(
       this.page, 
       10, 
@@ -130,28 +130,24 @@ export struct RecPost {
     
     getRecPostList(queryParam).then((res) => {
       if(res.list.length > 0) {
+        if (this.page === 1) {
+          // 如果是第一页，直接替换数据
+          this.postList = res.list
+        } else {
+          // 如果是加载更多，追加数据
+          this.postList = [...this.postList, ...res.list]
+        }
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
-        
-        // 更新现有帖子的数据
-        res.list.forEach(newPost => {
-          const existingPostIndex = this.postList.findIndex(post => post.id === newPost.id)
-          if (existingPostIndex !== -1) {
-            // 更新现有帖子的数据
-            const existingPost = this.postList[existingPostIndex]
-            existingPost.likeCount = newPost.likeCount
-            existingPost.commentCount = newPost.commentCount
-          } else {
-            // 添加新帖子
-            this.postList.push(newPost)
-          }
-        })
       } else {
         this.isNone = true
       }
       this.isLoading = false
+      this.isRefreshing = false
     }).catch((err: string) => {
       console.error('获取推荐帖子失败: ', err)
       showBottomError(this.getUIContext(), err)
+      this.isLoading = false
+      this.isRefreshing = false
     })
   }
   @Builder
@@ -222,57 +218,53 @@ export struct RecPost {
     this.getList() // 重新获取帖子列表
   }
 
+  // 刷新数据
+  refreshData() {
+    // 重置页码和状态
+    this.page = 1
+    this.isNone = false
+    this.postList = []
+    this.getList()
+  }
+
   build() {
     Stack() {
-      Column() {
-        // 添加分类选择栏
-        this.CategoryBar()
-        Scroll() {
-          if(this.postList.length == 0) {
+      Refresh({ refreshing: $$this.isRefreshing, offset: 120, friction: 100 }) {
+        Column() {
+          // 分类选择栏
+          this.CategoryBar()
+          
+          if(this.postList.length == 0 && !this.isRefreshing) {
             EmptyPage()
           } else {
-            Column() {
-              this.MyPostList()
-              if(this.isLoading) {
-                Loading({h: "10%", text: ''})
-                  .offset({bottom: 0})
+            Scroll() {
+              Column() {
+                this.MyPostList()
               }
+              .width('100%')
+              .constraintSize({minHeight: '100%'})
+              .backgroundColor('#f5f7fa')
+              .padding({bottom: 55})
             }
+            .scrollable(ScrollDirection.Vertical)
+            .scrollBar(BarState.Auto)
             .width('100%')
-            .constraintSize({minHeight: '100%'})
-            // .backgroundColor('#fff8f7f7')
-            .backgroundColor('#f5f7fa') // 更柔和的白蓝色
-            .padding({bottom: 55})
+            .height('100%')
           }
         }
-        .scrollBarWidth(0)
-        .onWillScroll((xOffset: number, yOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
-          if(yOffset > 0) {
-            // 向下滚动
-            this.buttonShow = false
-            if(this.buttonOpacity > 0) {
-              this.buttonOpacity = 0
-            }
-          } else {
-            this.buttonShow = true
-            this.buttonOpacity = 0.95
-          }
-        })
-        .onScrollEdge((event)=>{
-          if(event == 2){
-            if(!this.isNone) {
-              this.page++
-              this.getList()
-            } else {
-              showBottomToast(this.getUIContext(), '没有更多了')
-            }
-          }
-        })
+        .width('100%')
       }
+      .onRefreshing(() => {
+        this.isRefreshing = true
+        // 刷新数据
+        this.refreshData()
+        // 2秒后结束刷新状态
+        setTimeout(() => {
+          this.isRefreshing = false
+        }, 2000)
+      })
 
-      /**
-       * 添加按钮
-       */
+      // 添加按钮部分保持不变
       Stack() {
         Row()
           .width(50)
@@ -282,29 +274,17 @@ export struct RecPost {
           .backgroundColor('#ff09a2de')
           .opacity(this.buttonOpacity)
           .shadow({
-            radius: 10, // 阴影模糊半径
-            color: '#a4000040', // 阴影颜色，这里使用半透明黑色
-            offsetX: 5, // 阴影水平偏移量
-            offsetY: 5 // 阴影垂直偏移量
+            radius: 10,
+            color: '#a4000040',
+            offsetX: 5,
+            offsetY: 5
           })
-        // Row()
-        //   .width(56)
-        //   .height(56)
-        //   .borderRadius(28)
-        //   .backgroundColor('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')
-        //   .opacity(this.buttonOpacity)
-        //   .shadow({
-        //     radius: 12,
-        //     color: '#aa000000',
-        //     offsetX: 4,
-        //     offsetY: 4
-        //   })
         Row() {
           Blank()
             .width('50px')
             .height('50px')
             .borderRadius('50%')
-            .backgroundColor('linear-gradient(to right, #ff8a00, #e52e71)')  // 渐变色背景
+            .backgroundColor('linear-gradient(to right, #ff8a00, #e52e71)')
         }
         .width('50px')
         .height('50px')
@@ -318,15 +298,6 @@ export struct RecPost {
           .opacity(this.buttonOpacity)
       }
       .position({ bottom: 30, right: 30})
-      // 根据显示区域判断
-      .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean, currentRatio: number) => {
-        if (isVisible && currentRatio == 1.0) {
-          // 调用自定义的show方法
-          this.onPageShow()
-        } else if (currentRatio == 0.0) {
-          // 调用自定义的hide方法
-        }
-      })
       .onClick(() => {
         if(this.buttonShow) {
           router.pushUrl({
@@ -334,7 +305,15 @@ export struct RecPost {
           })
         }
       })
-
     }
+    // 根据显示区域判断
+    .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean, currentRatio: number) => {
+      if (isVisible && currentRatio == 1.0) {
+        // 调用自定义的show方法
+        this.onPageShow()
+      } else if (currentRatio == 0.0) {
+        // 调用自定义的hide方法
+      }
+    })
   }
 }
