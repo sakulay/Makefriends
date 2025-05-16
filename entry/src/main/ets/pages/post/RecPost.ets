@@ -34,6 +34,8 @@ export struct RecPost {
   @State page: number = 1
   @State isLoading: boolean = false
   @State isRefreshing: boolean = false
+  @State isLoadingMore: boolean = false
+  @State hasMore: boolean = true
   @State reportForm: ReportForm = new ReportForm(1, "", "");
   @State params: PostParams = {
     postId: 0,
@@ -112,6 +114,7 @@ export struct RecPost {
    * 获取帖子列表
    */
   getList() {
+    if (this.isLoadingMore) return
     this.isLoading = true
     
     const queryParam = new PostQuery(
@@ -137,17 +140,21 @@ export struct RecPost {
           // 如果是加载更多，追加数据
           this.postList = [...this.postList, ...res.list]
         }
+        this.hasMore = res.list.length === 10
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
       } else {
         this.isNone = true
+        this.hasMore = false
       }
       this.isLoading = false
       this.isRefreshing = false
+      this.isLoadingMore = false
     }).catch((err: string) => {
       console.error('获取推荐帖子失败: ', err)
       showBottomError(this.getUIContext(), err)
       this.isLoading = false
       this.isRefreshing = false
+      this.isLoadingMore = false
     })
   }
   @Builder
@@ -240,6 +247,20 @@ export struct RecPost {
             Scroll() {
               Column() {
                 this.MyPostList()
+                if (this.isLoadingMore) {
+                  Row() {
+                    Loading()
+                      .width(24)
+                      .height(24)
+                    Text('加载中...')
+                      .fontSize(14)
+                      .fontColor('#666666')
+                      .margin({ left: 8 })
+                  }
+                  .width('100%')
+                  .justifyContent(FlexAlign.Center)
+                  .padding({ top: 16, bottom: 16 })
+                }
               }
               .width('100%')
               .constraintSize({minHeight: '100%'})

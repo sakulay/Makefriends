@@ -26,14 +26,6 @@ struct Register {
   @State focusOn: number = 0;
   @State auth: AuthModel = new AuthModel('', '', '')
   @State loading: boolean = false;
-  // @State auth: AuthModel = new AuthModel(
-  //   '',
-  //   '',
-  //   'http://111.230.102.82:40061/i/2025/04/10/x41yrm-0.jpg',
-  //   0,
-  //   'http://111.230.102.82:40061/app/del.php?hash=RWxYMmJaOXJlbmRGWWZMc0MveTBmUE9ML25SQjE4RVB3TUk9'
-  // );
-  // @State uri: string = 'http://111.230.102.82:40061/i/2025/04/10/x41yrm-0.jpg';
   @State uri: string = '';
   @State studentIdError: string = '';
   @State confirm: string = '';
@@ -64,10 +56,47 @@ struct Register {
   }
 
   // 方法：检查输入是否为数字
-  private checkIfNumber(value: string): boolean {
-    const regex = /^\d+$/;
-    return regex.test(value);
+  private check(value: string): boolean {
+    // 第一步：校验是否为 10 位纯数字
+    const regex = /^\d{10}$/;
+    if (!regex.test(value)) {
+      return false;
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear(); // e.g., 2025
+    const currentMonth = now.getMonth() + 1; // getMonth 是 0~11，要 +1
+
+    const inputYear = Number(value.slice(0, 2)); // 输入前两位年份，比如 25
+    const fullInputYear = 2000 + inputYear;
+    const collegeCode = Number(value.slice(2, 5));
+    const classNum = Number(value.charAt(7));
+    const positionNum = Number(value.slice(8, 10));
+
+    // 限制年份不能超过当前年，除非已经是9月以后
+    if (fullInputYear > currentYear) {
+      return false; // 比今年还大，直接不合法
+    }
+
+    if (fullInputYear === currentYear && currentMonth < 9) {
+      return false; // 使用了今年的年份，但还没到9月，不合法
+    }
+
+    if (collegeCode < 1 || collegeCode > 18) {
+      return false; // 学院代号不合法
+    }
+
+    if (classNum < 1 || classNum > 9) {
+      return false; // 班级号不合法
+    }
+
+    if (positionNum < 1 || positionNum > 40) {
+      return false; // 排位号不合法
+    }
+
+    return true; // 全部通过
   }
+
   @Builder
   studentId() {
     Stack({alignContent: Alignment.TopStart}) {
@@ -85,7 +114,7 @@ struct Register {
         })
         .onChange((value: string) => {
           this.auth.studentId = value
-          if(this.checkIfNumber(value)) {
+          if(this.check(value)) {
             this.studentIdError = ''
           } else {
             this.studentIdError = '请输入正确的学号'

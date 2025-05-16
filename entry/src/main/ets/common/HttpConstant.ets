@@ -1,6 +1,6 @@
 export class HttpConstant{
   static PROTOCOL = ''
-  static DEV_DOMIN: string = "192.168.57.225"
+  static DEV_DOMIN: string = "192.168.218.225"
   static PRO_DOMIN: string = "111.230.102.82"
   static DOMIN: string = HttpConstant.DEV_DOMIN
   static UPLOAD_URL: string = "http://111.230.102.82:40061/api/index.php"

@@ -39,7 +39,7 @@ export struct PostCard {
   build() {
     Column({space: 8}) {
       Row() {
-        Image(this.item.userInfo.avatar)
+        Image( this.item.userInfo.avatar )
           .width(44)
           .height(44)
           .borderRadius(22)
