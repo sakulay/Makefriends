@@ -25,6 +25,9 @@
     "pages/mine/Favorites",
     "pages/mine/Complaints",
     "pages/notice/NoticeListPage",
-    "pages/notice/NoticeDetailPage"
+    "pages/notice/NoticeDetailPage",
+    "pages/mine/SecurityCenter",
+    "pages/mine/ChangePassword",
+    "pages/mine/DeleteAccount"
   ]
 }

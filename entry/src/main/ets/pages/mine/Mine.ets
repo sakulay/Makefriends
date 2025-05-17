@@ -205,6 +205,31 @@ export struct Mine {
         .margin({ top: 12 })
         .borderRadius(16)
 
+        // 安全中心入口
+        Row() {
+          Image($r('app.media.ic_security'))
+            .width(20)
+            .height(20)
+            .margin({ right: 8 })
+          Text('安全中心')
+            .fontSize(16)
+            .fontColor('#333333')
+          Blank()
+          Image($r('app.media.ic_right_arrow'))
+            .width(16)
+            .height(16)
+            .opacity(0.4)
+        }
+        .width('100%')
+        .height(56)
+        .margin({ top: 2 })
+        .padding({ left: 16, right: 16 })
+        .backgroundColor(Color.White)
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/mine/SecurityCenter'
+          })
+        })
         // 退出登录按钮
         Button("退出登录", { type: ButtonType.Normal })
           .width('90%')
@@ -224,9 +249,6 @@ export struct Mine {
             })
           })
 
-        Button("上传图片").onClick(() => {
-          router.pushUrl({ url: "pages/Test" })
-        })
       }
       .width('100%')
       .height('100%')
