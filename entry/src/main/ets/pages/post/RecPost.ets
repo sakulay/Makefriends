@@ -9,6 +9,7 @@ import { CustomDialogExample } from '../View/DialogBottom'
 import { ReportForm } from '../../api/reportApi'
 import { PostList } from "../../utils/Mock"
 import { CategoryModel, CategoryQuery, getCategoryPage, mockCategories } from '../../api/categoryApi'
+import { myloading } from '../mine/BrowseRecord'
 
 export interface PostParams {
   postId: number
@@ -32,7 +33,6 @@ export struct RecPost {
   @State buttonShow: boolean = true
   @State isNone: boolean = false
   @State page: number = 1
-  @State isLoading: boolean = false
   @State isRefreshing: boolean = false
   @State isLoadingMore: boolean = false
   @State hasMore: boolean = true
@@ -99,12 +99,10 @@ export struct RecPost {
    * 获取分类
    */
   getCategories() {
-    this.isLoading = true
     let queryParams = new CategoryQuery(1, 50, 0)
     getCategoryPage(queryParams).then((res) => {
       console.log('获取分类成功: ', JSON.stringify(res))
       this.categories.push(...res.list)
-      this.isLoading = false
     }).catch((err: string) => {
       console.error('获取分类失败: ', err)
       showBottomError(this.getUIContext(), err)
@@ -114,23 +112,16 @@ export struct RecPost {
    * 获取帖子列表
    */
   getList() {
-    if (this.isLoadingMore) return
-    this.isLoading = true
-    
     const queryParam = new PostQuery(
-      this.page, 
-      10, 
-      1, 
-      undefined, 
-      undefined, 
-      undefined, 
+      this.page, 10, 1, undefined, undefined, undefined,
       this.selectedCategory !== 0 ? this.selectedCategory : undefined
     )
     
     if (this.selectedCategory !== 0) {
       console.log(`${this.LOG} 按分类查询，分类ID: ${this.selectedCategory}`)
     }
-    
+    // this.hasMore = false
+    // if(this.page!=1)return
     getRecPostList(queryParam).then((res) => {
       if(res.list.length > 0) {
         if (this.page === 1) {
@@ -140,22 +131,23 @@ export struct RecPost {
           // 如果是加载更多，追加数据
           this.postList = [...this.postList, ...res.list]
         }
+        // 判断是否有更多数据，用于加载更多按钮的显示
         this.hasMore = res.list.length === 10
         console.log('获取推荐帖子成功: ', JSON.stringify(res))
       } else {
         this.isNone = true
         this.hasMore = false
       }
-      this.isLoading = false
+
       this.isRefreshing = false
-      this.isLoadingMore = false
     }).catch((err: string) => {
       console.error('获取推荐帖子失败: ', err)
       showBottomError(this.getUIContext(), err)
-      this.isLoading = false
       this.isRefreshing = false
-      this.isLoadingMore = false
     })
+      .finally(()=>{
+        this.isLoadingMore = false
+      })
   }
   @Builder
   MyPostList() {
@@ -236,7 +228,7 @@ export struct RecPost {
 
   build() {
     Stack() {
-      Refresh({ refreshing: $$this.isRefreshing, offset: 120, friction: 100 }) {
+      Refresh({ refreshing: $$this.isRefreshing, offset: 120, friction: 100, builder: myloading() }) {
         Column() {
           // 分类选择栏
           this.CategoryBar()
@@ -244,33 +236,53 @@ export struct RecPost {
           if(this.postList.length == 0 && !this.isRefreshing) {
             EmptyPage()
           } else {
-            Scroll() {
-              Column() {
-                this.MyPostList()
-                if (this.isLoadingMore) {
+            List() {
+              ForEach(this.postList, (item: PostModel) => {
+                ListItem() {
+                  PostCard({item: item})
+                    .opacity(this.cardOpacity)
+                    .gesture(LongPressGesture(
+                      {repeat: false}).onAction(() => {
+                      this.reportForm.complaintTargetId = item.id.toString()
+                      this.reportForm.complaintTargetType = 1
+                      this.dialogControllerBottom?.open()
+                    })
+                    )
+                }
+              }, (item: PostModel) => item.id.toString())
+              
+              if (this.isLoadingMore && this.postList.length != 0) {
+                ListItem() {
                   Row() {
-                    Loading()
-                      .width(24)
-                      .height(24)
-                    Text('加载中...')
+                    LoadingProgress()
+                      .width(40)
+                      .height(40)
+                      .color($r('app.color.blue_theme_2'))
+                    Text("加载中")
                       .fontSize(14)
-                      .fontColor('#666666')
-                      .margin({ left: 8 })
+                      .fontColor($r('app.color.blue_theme_2'))
                   }
                   .width('100%')
                   .justifyContent(FlexAlign.Center)
+                  .alignItems(VerticalAlign.Center)
                   .padding({ top: 16, bottom: 16 })
                 }
               }
-              .width('100%')
-              .constraintSize({minHeight: '100%'})
-              .backgroundColor('#f5f7fa')
-              .padding({bottom: 55})
             }
-            .scrollable(ScrollDirection.Vertical)
-            .scrollBar(BarState.Auto)
+            // .cachedCount(2)
+            .onScrollIndex((start: number, end: number, center: number) => {
+              // 当滚动到最后一个元素时加载更多
+              if (end >= this.postList.length - 1 && !this.isLoadingMore && this.hasMore) {
+                console.log('开始加载更多: ', this.page, this.hasMore, this.isLoadingMore)
+                this.isLoadingMore = true
+                this.page += 1
+                this.getList()
+              }
+            })
             .width('100%')
             .height('100%')
+            .backgroundColor('#f5f7fa')
+            .padding({bottom: 55})
           }
         }
         .width('100%')

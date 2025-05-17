@@ -5,10 +5,26 @@ import { PostModel } from '../../api/postApi';
 import { Loading } from '../components/Loading';
 import { router } from '@kit.ArkUI';
 import { EmptyPage } from '../components/EmptyPage';
-
+@Builder
+export function myloading() {
+  Row() {
+    LoadingProgress()
+      .width(40)
+      .height(40)
+      .color($r('app.color.blue_theme_2'))
+    Text("加载中")
+      .fontSize(14)
+      .fontColor($r('app.color.blue_theme_2'))
+  }
+  .width('100%')
+  .justifyContent(FlexAlign.Center)
+  .alignItems(VerticalAlign.Center)
+  .padding({ top: 16, bottom: 16 })
+}
 @Entry
 @Component
 struct BrowseRecord {
+  @State isRefreshing: boolean = false;
   private LOG = "[BrowseRecord]"
   @State records: PostModel[] = [];
   @State loading: boolean = false;
@@ -20,11 +36,22 @@ struct BrowseRecord {
     console.log(this.LOG, "router.getLength():", router.getLength())
     this.loadData();
   }
-  
 
   async loadData() {
-    if (this.loading || !this.hasMore) return;
+    console.log("page", this.pageNum)
+    // 如果正在加载中，直接返回
+    if (this.loading) {
+      console.log("正在加载中，跳过")
+      return;
+    }
     
+    // 如果不是刷新状态，且没有更多数据，直接返回
+    if (!this.isRefreshing && !this.hasMore) {
+      console.log("没有更多数据，跳过")
+      return;
+    }
+
+    console.log("发送请求")
     this.loading = true;
     try {
       const result = await getBrowseRecordPage({
@@ -40,11 +67,14 @@ struct BrowseRecord {
       }
       
       this.hasMore = result.list.length === this.pageSize;
-      this.pageNum++;
+      if (this.hasMore) {
+        this.pageNum++;
+      }
     } catch (error) {
       console.error('加载浏览记录失败:', error);
     } finally {
       this.loading = false;
+      this.isRefreshing = false;
     }
   }
 
@@ -57,36 +87,44 @@ struct BrowseRecord {
     }
   }
 
-  build() {
-    Column() {
-      // 顶部导航栏
-      Row() {
-        Image($r('app.media.ic_left_arrow'))
-          .width(24)
-          .height(24)
-          .margin({ left: 12 })
-          .onClick(() => {
-            // 返回上一页
-            router.back();
-          })
-        Text('浏览记录')
-          .fontSize(18)
-          .fontWeight(FontWeight.Medium)
-          .margin({ left: 12 })
-        Blank()
-      }
-      .width('100%')
-      .height(48)
-      .backgroundColor('#FFFFFF')
-      .justifyContent(FlexAlign.Start)
-      .alignItems(VerticalAlign.Center)
+  // 刷新数据
+  async refreshData() {
+    // 重置页码和状态
+    console.log('刷新数据')
+    this.pageNum = 1
+    this.hasMore = true
+    this.records = []
+    this.isRefreshing = true
+    await this.loadData()
+  }
 
-      if(this.loading) {
-        Loading({h: '100%'})
-      } else {
-        if(this.records.length == 0) {
-          EmptyPage()
-        } else {
+
+  build() {
+    Refresh({ refreshing: $$this.isRefreshing, offset: 120, friction: 2,  builder: myloading() }) {
+      Column() {
+        // 顶部导航栏
+        Row() {
+          Image($r('app.media.ic_left_arrow'))
+            .width(24)
+            .height(24)
+            .margin({ left: 12 })
+            .onClick(() => {
+              // 返回上一页
+              router.back();
+            })
+          Text('浏览记录')
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+            .margin({ left: 12 })
+          Blank()
+        }
+        .width('100%')
+        .height(48)
+        .backgroundColor('#FFFFFF')
+        .justifyContent(FlexAlign.Start)
+        .alignItems(VerticalAlign.Center)
+
+        Stack({alignContent: Alignment.Top}) {
           List() {
             ForEach(this.records, (record: PostModel) => {
               ListItem() {
@@ -147,6 +185,11 @@ struct BrowseRecord {
                 }, router.RouterMode.Standard)
               })
             })
+            if(this.loading && !this.isRefreshing) {
+              ListItem() {
+                myloading()
+              }
+            }
           }
           .onReachEnd(() => this.loadData())
           .width('100%')
@@ -155,9 +198,13 @@ struct BrowseRecord {
           .backgroundColor('#F5F5F5')
         }
       }
+      .width('100%')
+      .height('100%')
+      .backgroundColor('#F5F5F5')
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#F5F5F5')
+    .onRefreshing(() => {
+      this.refreshData()
+    })
+
   }
 } 
